@@ -1,0 +1,105 @@
+{
+  "test": {
+    "accuracy": 0.9984257477698093,
+    "balanced_accuracy": 0.7716055775174245,
+    "f1_macro": 0.7898770007371495,
+    "f1_weighted": 0.9980627721227328
+  },
+  "cv_model_comparison": [
+    {
+      "model": "KNN",
+      "seconds": 213.65,
+      "f1_macro_mean": 0.8477468083893456,
+      "f1_macro_std": 0.03778163440349529,
+      "f1_weighted_mean": 0.9981397393086777,
+      "f1_weighted_std": 0.00029645909745046534,
+      "balanced_accuracy_mean": 0.8138204147447917,
+      "balanced_accuracy_std": 0.03216492694871557,
+      "accuracy_mean": 0.9983601515335991,
+      "accuracy_std": 0.0002493150926443126
+    },
+    {
+      "model": "Linear SVM",
+      "seconds": 18.13,
+      "f1_macro_mean": 0.8112819465190844,
+      "f1_macro_std": 0.016813273860101167,
+      "f1_weighted_mean": 0.9975579058007137,
+      "f1_weighted_std": 0.00039108708248789437,
+      "balanced_accuracy_mean": 0.8124965668157282,
+      "balanced_accuracy_std": 0.030744493989352226,
+      "accuracy_mean": 0.9975292899739087,
+      "accuracy_std": 0.0007530214609878572
+    },
+    {
+      "model": "Random Forest",
+      "seconds": 28.97,
+      "f1_macro_mean": 0.7464366051768819,
+      "f1_macro_std": 0.0027956743917801515,
+      "f1_weighted_mean": 0.986738303671751,
+      "f1_weighted_std": 0.0011524081630606515,
+      "balanced_accuracy_mean": 0.9313791458566169,
+      "balanced_accuracy_std": 0.03157369250474189,
+      "accuracy_mean": 0.9779604959828989,
+      "accuracy_std": 0.0019719050040657303
+    },
+    {
+      "model": "Decision Tree",
+      "seconds": 15.24,
+      "f1_macro_mean": 0.7454857342939373,
+      "f1_macro_std": 0.0034382292654936966,
+      "f1_weighted_mean": 0.9861517475908135,
+      "f1_weighted_std": 0.0009584698504643711,
+      "balanced_accuracy_mean": 0.9362412867058394,
+      "balanced_accuracy_std": 0.022500904651753893,
+      "accuracy_mean": 0.9770640295854681,
+      "accuracy_std": 0.0016012384564090968
+    },
+    {
+      "model": "Gaussian Naive Bayes",
+      "seconds": 14.92,
+      "f1_macro_mean": 0.7073904023076885,
+      "f1_macro_std": 0.005473047314911557,
+      "f1_weighted_mean": 0.9677038735126784,
+      "f1_weighted_std": 0.002513382313281765,
+      "balanced_accuracy_mean": 0.9147187185204148,
+      "balanced_accuracy_std": 0.006471375612588793,
+      "accuracy_mean": 0.9482902229144734,
+      "accuracy_std": 0.0034246633010361657
+    },
+    {
+      "model": "Dummy (Zero-R)",
+      "seconds": 9.47,
+      "f1_macro_mean": 0.19786092718520737,
+      "f1_macro_std": 1.0580254062933274e-05,
+      "f1_weighted_mean": 0.5182904210096118,
+      "f1_weighted_std": 7.358100883190018e-05,
+      "balanced_accuracy_mean": 0.25,
+      "balanced_accuracy_std": 0.0,
+      "accuracy_mean": 0.6548670648752205,
+      "accuracy_std": 5.795101251585778e-05
+    }
+  ],
+  "cv_feature_ablation": [
+    {
+      "feature_set": "full",
+      "n_features": 11,
+      "f1_macro_mean": 0.8477468083893456,
+      "f1_macro_std": 0.03778163440349529,
+      "balanced_accuracy_mean": 0.8138204147447917
+    },
+    {
+      "feature_set": "without_nat",
+      "n_features": 9,
+      "f1_macro_mean": 0.8476524614613938,
+      "f1_macro_std": 0.037849361304138254,
+      "balanced_accuracy_mean": 0.8137260215695712
+    },
+    {
+      "feature_set": "ports_only",
+      "n_features": 2,
+      "f1_macro_mean": 0.6833777999957623,
+      "f1_macro_std": 0.008143707399736048,
+      "balanced_accuracy_mean": 0.6968177044895366
+    }
+  ]
+}
