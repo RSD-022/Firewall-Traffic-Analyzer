@@ -1,0 +1,82 @@
+{
+  "_note": "FAKE metrics for development/testing only. These numbers are NOT from a real evaluation.",
+  "model_name": "DecisionTreeClassifier (FAKE toy model)",
+  "accuracy": 0.8765,
+  "macro_f1": 0.6543,
+  "weighted_f1": 0.8701,
+  "class_labels": ["allow", "deny", "drop", "reset-both"],
+  "model_comparison": [
+    {
+      "model": "DecisionTree (FAKE)",
+      "macro_f1": 0.6543,
+      "weighted_f1": 0.8701,
+      "balanced_accuracy": 0.6812,
+      "roc_auc_ovr": 0.8900,
+      "cv_mean": 0.8650,
+      "cv_std": 0.0120,
+      "train_time_sec": 0.42,
+      "best_params": "max_depth=5"
+    },
+    {
+      "model": "RandomForest (FAKE)",
+      "macro_f1": 0.7821,
+      "weighted_f1": 0.9102,
+      "balanced_accuracy": 0.7533,
+      "roc_auc_ovr": 0.9450,
+      "cv_mean": 0.9010,
+      "cv_std": 0.0085,
+      "train_time_sec": 3.21,
+      "best_params": "n_estimators=100, max_depth=15"
+    },
+    {
+      "model": "GradientBoosting (FAKE)",
+      "macro_f1": 0.8012,
+      "weighted_f1": 0.9234,
+      "balanced_accuracy": 0.7755,
+      "roc_auc_ovr": 0.9601,
+      "cv_mean": 0.9180,
+      "cv_std": 0.0072,
+      "train_time_sec": 12.55,
+      "best_params": "n_estimators=200, max_depth=5, lr=0.1"
+    }
+  ],
+  "per_class": [
+    {"class": "allow",      "precision": 0.91, "recall": 0.95, "f1": 0.93, "support": 7528},
+    {"class": "deny",       "precision": 0.85, "recall": 0.80, "f1": 0.82, "support": 2997},
+    {"class": "drop",       "precision": 0.82, "recall": 0.78, "f1": 0.80, "support": 2570},
+    {"class": "reset-both", "precision": 0.50, "recall": 0.27, "f1": 0.35, "support": 11}
+  ],
+  "confusion_matrices": {
+    "DecisionTree (FAKE)": {
+      "class_labels": ["allow", "deny", "drop", "reset-both"],
+      "matrix": [
+        [7150, 200, 170, 8],
+        [500, 2400, 90, 7],
+        [400, 100, 2060, 10],
+        [5, 1, 2, 3]
+      ]
+    },
+    "RandomForest (FAKE)": {
+      "class_labels": ["allow", "deny", "drop", "reset-both"],
+      "matrix": [
+        [7300, 120, 100, 8],
+        [350, 2550, 90, 7],
+        [280, 80, 2200, 10],
+        [3, 1, 2, 5]
+      ]
+    }
+  },
+  "feature_importances": [
+    {"feature": "NAT Source Port",      "importance": 0.35},
+    {"feature": "NAT Destination Port", "importance": 0.22},
+    {"feature": "Destination Port",     "importance": 0.12},
+    {"feature": "Bytes",                "importance": 0.08},
+    {"feature": "Bytes Sent",           "importance": 0.06},
+    {"feature": "Bytes Received",       "importance": 0.05},
+    {"feature": "Packets",              "importance": 0.04},
+    {"feature": "Source Port",          "importance": 0.03},
+    {"feature": "pkts_sent",            "importance": 0.02},
+    {"feature": "pkts_received",        "importance": 0.02},
+    {"feature": "Elapsed Time (sec)",   "importance": 0.01}
+  ]
+}
