@@ -50,6 +50,7 @@ from visualization import (
     spearman_heatmap,
     top_n_destination_ports,
 )
+from theme import apply_theme, sidebar_header_html, page_divider_html, action_badge_html, footer_html
 
 # ---------------------------------------------------------------------------
 # Paths — support env-var overrides for dev/test
@@ -78,10 +79,9 @@ MAX_ROWS = 100_000
 # Page config & global style
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="Firewall Intelligence", page_icon="🛡️", layout="wide")
-st.markdown("""<style>
-.block-container{padding-top:1.7rem;padding-bottom:3rem}
-[data-testid="stMetric"]{background:#121d2d0d;border:1px solid #80808022;border-radius:12px;padding:12px}
-</style>""", unsafe_allow_html=True)
+
+# Inject security-console theme (CSS only, no content change)
+apply_theme()
 
 if _using_test_artifacts:
     st.error("🧪 **TEST ARTIFACT** — not the team's trained model. "
@@ -161,6 +161,7 @@ def safe_upload(upload) -> pd.DataFrame:
 
 def section_heading(title: str, description: str):
     st.title(title)
+    st.markdown(page_divider_html(), unsafe_allow_html=True)
     st.caption(description)
 
 
@@ -179,15 +180,16 @@ except (ValueError, json.JSONDecodeError) as exc:
 # Sidebar navigation
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.title("🛡️ Firewall Intelligence")
-    st.caption("Intelligent Firewall Traffic Analyzer")
+    # Decorative: shield logo + system-status panel (replaces plain title/caption/success)
+    st.markdown(
+        sidebar_header_html(MODEL_FILE.is_file(), _using_test_artifacts),
+        unsafe_allow_html=True,
+    )
+    st.divider()
     page = st.radio("Navigation", [
         "Overview", "Data Quality", "Traffic Analytics", "Statistics",
         "Manual Prediction", "Batch Prediction", "Model Performance", "About & FAQ",
     ], label_visibility="collapsed")
-    st.divider()
-    st.success("Model available" if MODEL_FILE.is_file() else "Dataset/visualization mode")
-    st.caption("Research prototype · Historical traffic classification")
 
 
 # ===================================================================
@@ -656,12 +658,9 @@ elif page == "Manual Prediction":
                 result = predict_dataframe(model, input_df, features)
                 predicted = str(result["Predicted Action"].iloc[0])
                 color = ACTION_COLORS.get(predicted.lower(), "#888")
-                st.markdown(
-                    f'### Predicted action: <span style="color:{color}; '
-                    f'font-weight:bold; padding:4px 12px; border:2px solid {color}; '
-                    f'border-radius:8px">{predicted}</span>',
-                    unsafe_allow_html=True,
-                )
+
+                # Styled pill badge (replaces the plain markdown span)
+                st.markdown(action_badge_html(predicted, color), unsafe_allow_html=True)
 
                 # Probability bar chart
                 X_val = validate_features(input_df, features)
@@ -735,6 +734,7 @@ elif page == "Batch Prediction":
                 ))
                 fig.update_layout(title="Predicted actions", height=400,
                                   xaxis_title="Action", yaxis_title="Count")
+                fig.update_layout(template="fw_dark")
                 st.plotly_chart(fig, key="bp_pred_dist")
 
                 # If uploaded CSV has an Action column, show observed vs predicted
@@ -961,9 +961,12 @@ Historical CSV → data cleaning → fitted preprocessing → classifier → pre
 # Footer
 # ---------------------------------------------------------------------------
 st.divider()
-st.caption(
-    "Dataset: UCI Internet Firewall Data (dataset #542) · "
-    "Software: Python + Streamlit + scikit-learn · "
-    "**This is NOT a real firewall or intrusion-detection product.** "
-    "It is an academic Data Mining project for educational purposes only."
+st.markdown(
+    footer_html(
+        "Dataset: UCI Internet Firewall Data (dataset #542) &nbsp;·&nbsp; "
+        "Software: Python + Streamlit + scikit-learn &nbsp;·&nbsp; "
+        "<strong>This is NOT a real firewall or intrusion-detection product.</strong> "
+        "It is an academic Data Mining project for educational purposes only."
+    ),
+    unsafe_allow_html=True,
 )
