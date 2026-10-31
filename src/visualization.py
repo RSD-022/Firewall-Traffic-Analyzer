@@ -1,6 +1,7 @@
 """Plotly figure builders for the Firewall Traffic Analyzer.
 
 All charts use a consistent colour map for the four Action classes.
+Styling: dark security-console template applied to every figure.
 """
 from __future__ import annotations
 
@@ -10,13 +11,16 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 
+# ---------------------------------------------------------------------------
 # Fixed action colours
+# ---------------------------------------------------------------------------
 ACTION_COLORS: dict[str, str] = {
-    "allow": "#2ecc71",       # green
-    "deny": "#e74c3c",        # red
-    "drop": "#f39c12",        # amber
-    "reset-both": "#9b59b6",  # purple
+    "allow":      "#2ecc71",   # green
+    "deny":       "#e74c3c",   # red
+    "drop":       "#f39c12",   # amber
+    "reset-both": "#9b59b6",   # purple
 }
 
 _COLOR_SEQUENCE = [ACTION_COLORS.get(k, "#888") for k in ("allow", "deny", "drop", "reset-both")]
@@ -25,6 +29,68 @@ _COLOR_SEQUENCE = [ACTION_COLORS.get(k, "#888") for k in ("allow", "deny", "drop
 def _action_color_map(actions: list[str] | pd.Index) -> dict[str, str]:
     """Build colour map for the actions present in the data."""
     return {a: ACTION_COLORS.get(a, "#888888") for a in actions}
+
+
+# ---------------------------------------------------------------------------
+# Shared Plotly dark template — security-console style
+# ---------------------------------------------------------------------------
+_MONO = "JetBrains Mono, Fira Code, ui-monospace, Menlo, Consolas, monospace"
+_SANS = "Inter, system-ui, Segoe UI, Roboto, sans-serif"
+
+_DARK_TEMPLATE = go.layout.Template(
+    layout=go.Layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(16,24,38,0.85)",
+        font=dict(family=_SANS, color="#E6EDF7", size=12),
+        title=dict(
+            font=dict(family=_MONO, color="#E6EDF7", size=14),
+            x=0.0,
+            xanchor="left",
+            pad=dict(l=4, t=4),
+        ),
+        xaxis=dict(
+            gridcolor="#1F2C44",
+            zerolinecolor="#1F2C44",
+            tickfont=dict(family=_MONO, color="#8FA3BF", size=11),
+            title=dict(font=dict(family=_SANS, color="#8FA3BF", size=12)),
+            linecolor="#1F2C44",
+        ),
+        yaxis=dict(
+            gridcolor="#1F2C44",
+            zerolinecolor="#1F2C44",
+            tickfont=dict(family=_MONO, color="#8FA3BF", size=11),
+            title=dict(font=dict(family=_SANS, color="#8FA3BF", size=12)),
+            linecolor="#1F2C44",
+        ),
+        legend=dict(
+            bgcolor="rgba(16,24,38,0.9)",
+            bordercolor="#1F2C44",
+            borderwidth=1,
+            font=dict(family=_SANS, color="#8FA3BF", size=11),
+        ),
+        hoverlabel=dict(
+            bgcolor="#101826",
+            bordercolor="#22D3EE",
+            font=dict(family=_MONO, color="#22D3EE", size=12),
+        ),
+        margin=dict(l=48, r=24, t=44, b=44),
+        colorway=_COLOR_SEQUENCE,
+    )
+)
+
+# Register template globally so pio.templates["fw_dark"] is available
+pio.templates["fw_dark"] = _DARK_TEMPLATE
+
+
+def _apply(fig: go.Figure, height: int | None = None, width: int | None = None) -> go.Figure:
+    """Apply the shared dark template and optional size to *fig* in-place."""
+    updates: dict[str, Any] = {"template": "fw_dark"}
+    if height is not None:
+        updates["height"] = height
+    if width is not None:
+        updates["width"] = width
+    fig.update_layout(**updates)
+    return fig
 
 
 # ---------------------------------------------------------------------------
@@ -38,11 +104,12 @@ def class_distribution_donut(counts: pd.Series, title: str = "Action distributio
         labels=counts.index,
         values=counts.values,
         hole=0.45,
-        marker=dict(colors=colors),
+        marker=dict(colors=colors, line=dict(color="#0A0E17", width=2)),
         textinfo="label+percent",
+        textfont=dict(family=_MONO, size=12, color="#E6EDF7"),
     ))
     fig.update_layout(title_text=title, showlegend=True, height=400)
-    return fig
+    return _apply(fig)
 
 
 def class_comparison_bar(before: pd.Series, after: pd.Series) -> go.Figure:
@@ -55,6 +122,7 @@ def class_comparison_bar(before: pd.Series, after: pd.Series) -> go.Figure:
         y=[before.get(a, 0) for a in actions],
         marker_color=[ACTION_COLORS.get(a, "#888") for a in actions],
         opacity=0.7,
+        marker_line=dict(width=0),
     ))
     fig.add_trace(go.Bar(
         name="After dedup",
@@ -62,10 +130,11 @@ def class_comparison_bar(before: pd.Series, after: pd.Series) -> go.Figure:
         y=[after.get(a, 0) for a in actions],
         marker_color=[ACTION_COLORS.get(a, "#888") for a in actions],
         opacity=1.0,
+        marker_line=dict(width=0),
     ))
     fig.update_layout(barmode="group", title="Class counts: before vs after deduplication",
-                      xaxis_title="Action", yaxis_title="Count", height=420)
-    return fig
+                      xaxis_title="Action", yaxis_title="Count")
+    return _apply(fig, height=420)
 
 
 # ---------------------------------------------------------------------------
@@ -91,7 +160,7 @@ def histogram_with_kde(
     fig = go.Figure()
     fig.add_trace(go.Histogram(
         x=vals, histnorm="probability density", name="Histogram",
-        marker_color="#36b4a7", opacity=0.65, nbinsx=50,
+        marker_color="#22D3EE", marker_line=dict(width=0), opacity=0.6, nbinsx=50,
     ))
 
     # KDE overlay – best effort
@@ -103,14 +172,14 @@ def histogram_with_kde(
             x_grid = np.linspace(float(vals.min()), float(vals.max()), 300)
             fig.add_trace(go.Scatter(
                 x=x_grid, y=kde(x_grid), mode="lines",
-                name="KDE", line=dict(color="#f1c40f", width=2),
+                name="KDE", line=dict(color="#34D399", width=2),
             ))
         except Exception:
             pass  # constant / tiny column
 
     fig.update_layout(title=title, xaxis_title=series.name or "Value",
-                      yaxis_title="Density", height=420, bargap=0.05)
-    return fig
+                      yaxis_title="Density", bargap=0.05)
+    return _apply(fig, height=420)
 
 
 # ---------------------------------------------------------------------------
@@ -120,28 +189,42 @@ def histogram_with_kde(
 def action_frequency_bar(counts: pd.Series) -> go.Figure:
     """Bar chart of Action frequencies."""
     colors = [ACTION_COLORS.get(a, "#888") for a in counts.index]
-    fig = go.Figure(go.Bar(x=counts.index, y=counts.values, marker_color=colors))
-    fig.update_layout(title="Action frequency", xaxis_title="Action", yaxis_title="Count", height=400)
-    return fig
+    fig = go.Figure(go.Bar(
+        x=counts.index, y=counts.values, marker_color=colors,
+        marker_line=dict(width=0),
+    ))
+    fig.update_layout(title="Action frequency", xaxis_title="Action", yaxis_title="Count")
+    return _apply(fig, height=400)
 
 
 def top_n_destination_ports(df: pd.DataFrame, n: int = 15) -> go.Figure:
     """Top-N destination ports (treated as categories)."""
     counts = df["Destination Port"].astype(str).value_counts().head(n)
-    fig = go.Figure(go.Bar(x=counts.index, y=counts.values, marker_color="#36b4a7"))
+    fig = go.Figure(go.Bar(
+        x=counts.index, y=counts.values, marker_color="#22D3EE",
+        marker_line=dict(width=0),
+    ))
     fig.update_layout(title=f"Top {n} destination ports", xaxis_title="Port",
-                      yaxis_title="Count", height=400, xaxis_type="category")
-    return fig
+                      yaxis_title="Count", xaxis_type="category")
+    return _apply(fig, height=400)
 
 
 def nat_source_port_status(df: pd.DataFrame) -> go.Figure:
     """Bar: NAT Source Port zero vs nonzero."""
     status = pd.Series(np.where(df["NAT Source Port"] == 0, "zero", "nonzero"))
     counts = status.value_counts()
-    fig = go.Figure(go.Bar(x=counts.index, y=counts.values, marker_color=["#e74c3c", "#2ecc71"]))
+    # zero → deny-red; nonzero → allow-green
+    bar_colors = [
+        "#e74c3c" if str(idx) == "zero" else "#2ecc71"
+        for idx in counts.index
+    ]
+    fig = go.Figure(go.Bar(
+        x=counts.index, y=counts.values, marker_color=bar_colors,
+        marker_line=dict(width=0),
+    ))
     fig.update_layout(title="NAT Source Port status", xaxis_title="Status",
-                      yaxis_title="Count", height=400)
-    return fig
+                      yaxis_title="Count")
+    return _apply(fig, height=400)
 
 
 # ---------------------------------------------------------------------------
@@ -155,9 +238,15 @@ def spearman_heatmap(df: pd.DataFrame, title: str = "Spearman correlation") -> g
         z=corr.values, x=corr.columns, y=corr.index,
         colorscale="RdBu_r", zmin=-1, zmax=1,
         text=np.round(corr.values, 2), texttemplate="%{text}",
+        textfont=dict(family=_MONO, size=10, color="#E6EDF7"),
+        colorbar=dict(
+            tickfont=dict(family=_MONO, color="#8FA3BF", size=10),
+            bgcolor="rgba(16,24,38,0.8)",
+            bordercolor="#1F2C44",
+        ),
     ))
     fig.update_layout(title=title, height=550, width=700)
-    return fig
+    return _apply(fig)
 
 
 # ---------------------------------------------------------------------------
@@ -171,8 +260,9 @@ def boxplot_log_bytes_by_action(df: pd.DataFrame) -> go.Figure:
     fig = px.box(tmp, x="Action", y="log1p_Bytes",
                  color="Action", color_discrete_map=ACTION_COLORS,
                  title="log1p(Bytes) by Action")
-    fig.update_layout(height=450, showlegend=False)
-    return fig
+    fig.update_traces(marker=dict(line=dict(width=1, color="#0A0E17")))
+    fig.update_layout(showlegend=False)
+    return _apply(fig, height=450)
 
 
 # ---------------------------------------------------------------------------
@@ -183,11 +273,21 @@ def contingency_heatmap(ct: pd.DataFrame, title: str = "Contingency table") -> g
     """Heatmap from a cross-tab DataFrame."""
     fig = go.Figure(go.Heatmap(
         z=ct.values, x=[str(c) for c in ct.columns], y=[str(r) for r in ct.index],
-        colorscale="Blues",
+        colorscale=[
+            [0,   "#101826"],
+            [0.5, "#1AA8C4"],
+            [1,   "#22D3EE"],
+        ],
         text=ct.values, texttemplate="%{text}",
+        textfont=dict(family=_MONO, size=11, color="#E6EDF7"),
+        colorbar=dict(
+            tickfont=dict(family=_MONO, color="#8FA3BF", size=10),
+            bgcolor="rgba(16,24,38,0.8)",
+            bordercolor="#1F2C44",
+        ),
     ))
-    fig.update_layout(title=title, height=350)
-    return fig
+    fig.update_layout(title=title)
+    return _apply(fig, height=350)
 
 
 # ---------------------------------------------------------------------------
@@ -197,12 +297,14 @@ def contingency_heatmap(ct: pd.DataFrame, title: str = "Contingency table") -> g
 def metric_comparison_bar(df: pd.DataFrame, metric: str) -> go.Figure:
     """Bar chart comparing a metric across models."""
     fig = go.Figure(go.Bar(
-        x=df["model"], y=df[metric], marker_color="#36b4a7",
+        x=df["model"], y=df[metric], marker_color="#22D3EE",
+        marker_line=dict(width=0),
         text=df[metric].round(4), textposition="outside",
+        textfont=dict(family=_MONO, color="#E6EDF7", size=11),
     ))
     fig.update_layout(title=f"Model comparison — {metric}",
-                      xaxis_title="Model", yaxis_title=metric, height=420)
-    return fig
+                      xaxis_title="Model", yaxis_title=metric)
+    return _apply(fig, height=420)
 
 
 def confusion_matrix_heatmap(
@@ -223,15 +325,25 @@ def confusion_matrix_heatmap(
 
     fig = go.Figure(go.Heatmap(
         z=arr, x=labels, y=labels,
-        colorscale="Blues",
+        colorscale=[
+            [0,   "#101826"],
+            [0.5, "#1AA8C4"],
+            [1,   "#22D3EE"],
+        ],
         text=text, texttemplate="%{text}",
+        textfont=dict(family=_MONO, size=11, color="#E6EDF7"),
+        colorbar=dict(
+            tickfont=dict(family=_MONO, color="#8FA3BF", size=10),
+            bgcolor="rgba(16,24,38,0.8)",
+            bordercolor="#1F2C44",
+        ),
     ))
     fig.update_layout(
         title=title,
         xaxis_title="Predicted", yaxis_title="Actual",
         height=480, width=520,
     )
-    return fig
+    return _apply(fig)
 
 
 def feature_importance_bar(importances: list[dict[str, Any]]) -> go.Figure:
@@ -239,11 +351,12 @@ def feature_importance_bar(importances: list[dict[str, Any]]) -> go.Figure:
     df = pd.DataFrame(importances).sort_values("importance", ascending=True)
     fig = go.Figure(go.Bar(
         x=df["importance"], y=df["feature"],
-        orientation="h", marker_color="#36b4a7",
+        orientation="h", marker_color="#22D3EE",
+        marker_line=dict(width=0),
     ))
     fig.update_layout(title="Feature importances", xaxis_title="Importance",
                       yaxis_title="Feature", height=max(300, len(df) * 30 + 100))
-    return fig
+    return _apply(fig)
 
 
 def probability_bar_chart(
@@ -256,12 +369,14 @@ def probability_bar_chart(
     fig = go.Figure(go.Bar(
         x=classes, y=probabilities,
         marker_color=colors,
+        marker_line=dict(width=0),
         text=[f"{p:.1%}" for p in probabilities],
         textposition="outside",
+        textfont=dict(family=_MONO, color="#E6EDF7", size=11),
     ))
     fig.update_layout(
         title=f"Class probabilities (predicted: {predicted})",
         xaxis_title="Action", yaxis_title="Probability",
-        height=380, yaxis_range=[0, 1.1],
+        yaxis_range=[0, 1.1],
     )
-    return fig
+    return _apply(fig, height=380)
