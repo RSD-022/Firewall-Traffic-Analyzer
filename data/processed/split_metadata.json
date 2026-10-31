@@ -1,0 +1,43 @@
+{
+    "random_state": 42,
+    "split_method": "StratifiedGroupKFold",
+    "n_splits": 5,
+    "training_rows": 45736,
+    "testing_rows": 11434,
+    "feature_sets": {
+        "full": [
+            "Source Port",
+            "Destination Port",
+            "NAT Source Port",
+            "NAT Destination Port",
+            "Bytes",
+            "Bytes Sent",
+            "Bytes Received",
+            "Packets",
+            "Elapsed Time (sec)",
+            "pkts_sent",
+            "pkts_received"
+        ],
+        "without_nat": [
+            "Source Port",
+            "Destination Port",
+            "Bytes",
+            "Bytes Sent",
+            "Bytes Received",
+            "Packets",
+            "Elapsed Time (sec)",
+            "pkts_sent",
+            "pkts_received"
+        ],
+        "ports_only": [
+            "Source Port",
+            "Destination Port"
+        ]
+    },
+    "label_mapping": {
+        "allow": 0,
+        "deny": 1,
+        "drop": 2,
+        "reset-both": 3
+    }
+}
