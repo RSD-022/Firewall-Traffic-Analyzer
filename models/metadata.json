@@ -1,0 +1,32 @@
+{
+  "project": "Intelligent Firewall Traffic Analyzer",
+  "training_source": "data/processed/train.csv",
+  "test_source": "data/processed/test.csv",
+  "model_name": "KNN",
+  "feature_set": "full",
+  "feature_columns": [
+    "Source Port",
+    "Destination Port",
+    "NAT Source Port",
+    "NAT Destination Port",
+    "Bytes",
+    "Bytes Sent",
+    "Bytes Received",
+    "Packets",
+    "Elapsed Time (sec)",
+    "pkts_sent",
+    "pkts_received"
+  ],
+  "class_labels": [
+    "allow",
+    "deny",
+    "drop",
+    "reset-both"
+  ],
+  "random_state": 42,
+  "cv_folds": 5,
+  "selection_metric": "macro_f1",
+  "best_params": {},
+  "trained_at_utc": "2026-10-31T19:49:27.417926+00:00",
+  "warning": "Historical action prediction; full-feature measurements may be post-decision variables."
+}
