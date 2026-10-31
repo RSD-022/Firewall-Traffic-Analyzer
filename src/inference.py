@@ -83,3 +83,68 @@ def predict_dataframe(model, df: pd.DataFrame, features: list[str]) -> pd.DataFr
         except (AttributeError, NotImplementedError):
             pass  # Some classifiers/pipelines do not expose probabilities.
     return out
+
+
+# ---------------------------------------------------------------------------
+# New helpers
+# ---------------------------------------------------------------------------
+
+def get_probability_table(model, X: pd.DataFrame) -> pd.DataFrame | None:
+    """Return a DataFrame of per-class probabilities if the model supports it.
+
+    Columns are the class labels from the final estimator's ``classes_``
+    attribute.  Returns *None* when probabilities are not available.
+    """
+    if not hasattr(model, "predict_proba"):
+        return None
+    try:
+        proba = np.asarray(model.predict_proba(X))
+        if proba.ndim != 2 or proba.shape[0] != len(X):
+            return None
+    except (AttributeError, NotImplementedError):
+        return None
+
+    # Retrieve class labels from the final estimator
+    classes = _get_model_classes(model)
+    if classes is None or len(classes) != proba.shape[1]:
+        classes = [f"class_{i}" for i in range(proba.shape[1])]
+    return pd.DataFrame(proba, columns=classes, index=X.index)
+
+
+def _get_model_classes(model) -> list[str] | None:
+    """Extract classes_ from a pipeline or bare estimator."""
+    # sklearn Pipeline stores the classifier as the last step
+    estimator = model
+    if hasattr(model, "steps"):
+        estimator = model.steps[-1][1]
+    if hasattr(estimator, "classes_"):
+        return [str(c) for c in estimator.classes_]
+    return None
+
+
+def auto_sum_bytes(sent: float, received: float) -> float:
+    """Compute Bytes = Bytes Sent + Bytes Received."""
+    return sent + received
+
+
+def auto_sum_packets(sent: float, received: float) -> float:
+    """Compute Packets = pkts_sent + pkts_received."""
+    return sent + received
+
+
+def check_consistency_warnings(df: pd.DataFrame) -> list[str]:
+    """Return warnings for rows where Bytes != Sent+Received or Packets != sent+received."""
+    warnings: list[str] = []
+    if {"Bytes", "Bytes Sent", "Bytes Received"}.issubset(df.columns):
+        mismatch = (df["Bytes"] != df["Bytes Sent"] + df["Bytes Received"]).sum()
+        if mismatch:
+            warnings.append(
+                f"{mismatch} row(s) where Bytes ≠ Bytes Sent + Bytes Received."
+            )
+    if {"Packets", "pkts_sent", "pkts_received"}.issubset(df.columns):
+        mismatch = (df["Packets"] != df["pkts_sent"] + df["pkts_received"]).sum()
+        if mismatch:
+            warnings.append(
+                f"{mismatch} row(s) where Packets ≠ pkts_sent + pkts_received."
+            )
+    return warnings
