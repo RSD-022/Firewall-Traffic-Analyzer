@@ -1,4 +1,175 @@
 {
+  "model_name": "KNN",
+  "accuracy": 0.9984257477698093,
+  "balanced_accuracy": 0.7716055775174245,
+  "macro_f1": 0.7898770007371495,
+  "weighted_f1": 0.9980627721227328,
+  "class_labels": [
+    "allow",
+    "deny",
+    "drop",
+    "reset-both"
+  ],
+  "confusion_matrix": [
+    [
+      7487,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      1601,
+      7,
+      0
+    ],
+    [
+      0,
+      0,
+      2327,
+      0
+    ],
+    [
+      0,
+      10,
+      0,
+      1
+    ]
+  ],
+  "confusion_matrices": {
+    "KNN": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          7487,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1601,
+          7,
+          0
+        ],
+        [
+          0,
+          0,
+          2327,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          1
+        ]
+      ]
+    }
+  },
+  "per_class": [
+    {
+      "class": "allow",
+      "precision": 1.0,
+      "recall": 0.9998664529914529,
+      "f1": 0.9999332220367279,
+      "support": 7488
+    },
+    {
+      "class": "deny",
+      "precision": 0.9931761786600496,
+      "recall": 0.9956467661691543,
+      "f1": 0.9944099378881988,
+      "support": 1608
+    },
+    {
+      "class": "drop",
+      "precision": 0.9970008568980291,
+      "recall": 1.0,
+      "f1": 0.9984981763570049,
+      "support": 2327
+    },
+    {
+      "class": "reset-both",
+      "precision": 1.0,
+      "recall": 0.09090909090909091,
+      "f1": 0.16666666666666666,
+      "support": 11
+    }
+  ],
+  "model_comparison": [
+    {
+      "model": "KNN",
+      "macro_f1": 0.8477468083893456,
+      "weighted_f1": 0.9981397393086777,
+      "balanced_accuracy": 0.8138204147447917,
+      "accuracy": 0.9983601515335991,
+      "cv_mean": 0.8477468083893456,
+      "cv_std": 0.03778163440349529,
+      "train_time_sec": 147.53,
+      "best_params": "{'classifier__n_neighbors': 21, 'classifier__weights': 'distance'}"
+    },
+    {
+      "model": "Linear SVM",
+      "macro_f1": 0.8112819465190844,
+      "weighted_f1": 0.9975579058007137,
+      "balanced_accuracy": 0.8124965668157282,
+      "accuracy": 0.9975292899739087,
+      "cv_mean": 0.8112819465190844,
+      "cv_std": 0.016813273860101167,
+      "train_time_sec": 11.0,
+      "best_params": "default"
+    },
+    {
+      "model": "Random Forest",
+      "macro_f1": 0.7464366051768819,
+      "weighted_f1": 0.986738303671751,
+      "balanced_accuracy": 0.9313791458566169,
+      "accuracy": 0.9779604959828989,
+      "cv_mean": 0.7464366051768819,
+      "cv_std": 0.0027956743917801515,
+      "train_time_sec": 19.66,
+      "best_params": "default"
+    },
+    {
+      "model": "Decision Tree",
+      "macro_f1": 0.7454857342939373,
+      "weighted_f1": 0.9861517475908135,
+      "balanced_accuracy": 0.9362412867058394,
+      "accuracy": 0.9770640295854681,
+      "cv_mean": 0.7454857342939373,
+      "cv_std": 0.0034382292654936966,
+      "train_time_sec": 10.63,
+      "best_params": "default"
+    },
+    {
+      "model": "Gaussian Naive Bayes",
+      "macro_f1": 0.7073904023076885,
+      "weighted_f1": 0.9677038735126784,
+      "balanced_accuracy": 0.9147187185204148,
+      "accuracy": 0.9482902229144734,
+      "cv_mean": 0.7073904023076885,
+      "cv_std": 0.005473047314911557,
+      "train_time_sec": 9.97,
+      "best_params": "default"
+    },
+    {
+      "model": "Dummy (Zero-R)",
+      "macro_f1": 0.19786092718520737,
+      "weighted_f1": 0.5182904210096118,
+      "balanced_accuracy": 0.25,
+      "accuracy": 0.6548670648752205,
+      "cv_mean": 0.19786092718520737,
+      "cv_std": 1.0580254062933274e-05,
+      "train_time_sec": 9.78,
+      "best_params": "default"
+    }
+  ],
   "test": {
     "accuracy": 0.9984257477698093,
     "balanced_accuracy": 0.7716055775174245,
@@ -8,7 +179,7 @@
   "cv_model_comparison": [
     {
       "model": "KNN",
-      "seconds": 213.65,
+      "seconds": 147.53,
       "f1_macro_mean": 0.8477468083893456,
       "f1_macro_std": 0.03778163440349529,
       "f1_weighted_mean": 0.9981397393086777,
@@ -20,7 +191,7 @@
     },
     {
       "model": "Linear SVM",
-      "seconds": 18.13,
+      "seconds": 11.0,
       "f1_macro_mean": 0.8112819465190844,
       "f1_macro_std": 0.016813273860101167,
       "f1_weighted_mean": 0.9975579058007137,
@@ -32,7 +203,7 @@
     },
     {
       "model": "Random Forest",
-      "seconds": 28.97,
+      "seconds": 19.66,
       "f1_macro_mean": 0.7464366051768819,
       "f1_macro_std": 0.0027956743917801515,
       "f1_weighted_mean": 0.986738303671751,
@@ -44,7 +215,7 @@
     },
     {
       "model": "Decision Tree",
-      "seconds": 15.24,
+      "seconds": 10.63,
       "f1_macro_mean": 0.7454857342939373,
       "f1_macro_std": 0.0034382292654936966,
       "f1_weighted_mean": 0.9861517475908135,
@@ -56,7 +227,7 @@
     },
     {
       "model": "Gaussian Naive Bayes",
-      "seconds": 14.92,
+      "seconds": 9.97,
       "f1_macro_mean": 0.7073904023076885,
       "f1_macro_std": 0.005473047314911557,
       "f1_weighted_mean": 0.9677038735126784,
@@ -68,7 +239,7 @@
     },
     {
       "model": "Dummy (Zero-R)",
-      "seconds": 9.47,
+      "seconds": 9.78,
       "f1_macro_mean": 0.19786092718520737,
       "f1_macro_std": 1.0580254062933274e-05,
       "f1_weighted_mean": 0.5182904210096118,
@@ -83,23 +254,23 @@
     {
       "feature_set": "full",
       "n_features": 11,
-      "f1_macro_mean": 0.8477468083893456,
-      "f1_macro_std": 0.03778163440349529,
-      "balanced_accuracy_mean": 0.8138204147447917
+      "f1_macro_mean": 0.8478127433528705,
+      "f1_macro_std": 0.037771009658527,
+      "balanced_accuracy_mean": 0.8138981738491614
     },
     {
       "feature_set": "without_nat",
       "n_features": 9,
-      "f1_macro_mean": 0.8476524614613938,
-      "f1_macro_std": 0.037849361304138254,
-      "balanced_accuracy_mean": 0.8137260215695712
+      "f1_macro_mean": 0.8476524760492532,
+      "f1_macro_std": 0.03784342560778856,
+      "balanced_accuracy_mean": 0.8137260229628687
     },
     {
       "feature_set": "ports_only",
       "n_features": 2,
-      "f1_macro_mean": 0.6833777999957623,
-      "f1_macro_std": 0.008143707399736048,
-      "balanced_accuracy_mean": 0.6968177044895366
+      "f1_macro_mean": 0.686796472386618,
+      "f1_macro_std": 0.006343515533334529,
+      "balanced_accuracy_mean": 0.6764338086217907
     }
   ]
 }
