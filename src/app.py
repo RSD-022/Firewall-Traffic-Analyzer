@@ -680,8 +680,9 @@ elif page == "Manual Prediction":
     with st.expander("Limitations of this prediction"):
         st.markdown(
             "- The model was trained on **historical single-policy data** from one firewall.\n"
-            "- `reset-both` has only **54 training samples** — predictions for this class "
-            "are particularly uncertain.\n"
+            "- `reset-both` has only **43 training samples** and "
+            "**11 test samples** after deduplication. "
+            "Predictions for this class are particularly uncertain.\n"
             "- The model may rely on **NAT port patterns and byte/packet counts** that could "
             "reflect the firewall decision rather than predict it (potential target leakage).\n"
             "- Predictions are **not security policies**; do not use them to enforce firewall rules."
@@ -779,13 +780,56 @@ elif page == "Model Performance":
             st.write(metrics.get("model_name",
                                  metadata.get("model_name", "Not specified")))
 
-            keymap = [("Accuracy", "accuracy"), ("Macro F1", "macro_f1"),
-                      ("Weighted F1", "weighted_f1")]
-            metric_cols = st.columns(3)
-            for col, (label, key) in zip(metric_cols, keymap):
-                val = metrics.get(key)
-                col.metric(label,
-                           f"{float(val):.3f}" if isinstance(val, (float, int)) else "Not provided")
+            # Final test performance metrics
+            test_scores = metrics.get("test", metrics)
+            # Find reset-both results
+            rare_class = next(
+                (
+                    row for row in metrics.get("per_class", [])
+                    if row.get("class") == "reset-both"
+                ),
+                None
+            )
+            # Create four metric cards
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+               st.metric(
+                  "Test Accuracy",
+                  f"{test_scores['accuracy']:.2%}"
+               )
+            with col2:
+                st.metric(
+                      "Macro F1",
+                      f"{test_scores['f1_macro']:.3f}"
+                )     
+            with col3:  
+                    st.metric(
+                        "Balanced Accuracy",
+                        f"{test_scores['balanced_accuracy']:.2%}"
+                    )
+            with col4:
+                 if rare_class:
+                       st.metric(
+                         "Reset-both Recall",
+                         f"{rare_class['recall']:.2%}"
+                       )
+                 else:
+                     st.metric("Reset-both Recall", "N/A")
+            # Display minority-class explanation
+            if rare_class:
+                detected = round(
+                   rare_class["recall"] * rare_class["support"]
+               )
+                total = int(rare_class["support"])
+                st.warning(
+                      f"Only {detected} out of {total} reset-both "
+                      "observations were correctly classified. "
+                      "Overall accuracy does not reflect this "
+                      "minority-class weakness."
+                   )
+            st.caption(
+                "Metrics computed on the held-out test dataset."
+            )
 
             # --- Model comparison (OPTIONAL) ---
             if isinstance(metrics.get("model_comparison"), list) and metrics["model_comparison"]:
