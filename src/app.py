@@ -796,23 +796,23 @@ elif page == "Model Performance":
                st.metric(
                   "Test Accuracy",
                   f"{test_scores['accuracy']:.2%}"
-               )
+                )
             with col2:
                 st.metric(
-                      "Macro F1",
-                      f"{test_scores['f1_macro']:.3f}"
+                    "Macro F1",
+                    f"{test_scores['f1_macro']:.3f}"
                 )     
             with col3:  
-                    st.metric(
-                        "Balanced Accuracy",
-                        f"{test_scores['balanced_accuracy']:.2%}"
-                    )
+                st.metric(
+                    "Balanced Accuracy",
+                    f"{test_scores['balanced_accuracy']:.2%}"
+                )
             with col4:
                  if rare_class:
-                       st.metric(
-                         "Reset-both Recall",
-                         f"{rare_class['recall']:.2%}"
-                       )
+                    st.metric(
+                        "Reset-both Recall",
+                        f"{rare_class['recall']:.2%}"
+                    )
                  else:
                      st.metric("Reset-both Recall", "N/A")
             # Display minority-class explanation

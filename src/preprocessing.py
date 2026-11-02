@@ -20,13 +20,11 @@ from sklearn.preprocessing import (
 
 # 1. Define traffic measurement features
 
-"traffic_without_totals": [
-    "Source Port",
-    "Destination Port",
-    "NAT Source Port",
-    "NAT Destination Port",
+TRAFFIC_FEATURES = [
+    "Bytes",
     "Bytes Sent",
     "Bytes Received",
+    "Packets",
     "Elapsed Time (sec)",
     "pkts_sent",
     "pkts_received"
