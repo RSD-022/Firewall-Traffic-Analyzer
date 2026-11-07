@@ -43,7 +43,7 @@ the trained pipeline is exported.
 2. **Data Quality** — duplicates, conflicting labels, class share before/after dedup, outlier table.
 3. **Traffic Analytics** — 6-tab EDA dashboard with sidebar filters (Action, port, Bytes, time, dedup toggle).
 4. **Statistics** — Kruskal-Wallis and Chi-square tests on original and deduplicated data.
-5. **Manual Prediction** — form with presets, auto-computed Bytes/Packets, probability chart.
+5. **Manual Prediction** — form with presets and help text; Bytes/Packets are computed on submit from the sent and received values; chart of uncalibrated model scores.
 6. **Batch Prediction** — CSV upload, template download, consistency warnings, observed vs predicted.
 7. **Model Performance** — metrics, comparison table, confusion matrix, per-class, feature importance.
 8. **About & FAQ** — objectives, dataset provenance, methodology, FAQ accordion, limitations.
@@ -122,11 +122,18 @@ every optional section of the Model Performance page.
 
 ```bash
 python -m unittest discover -s tests -v
+python -m pytest -q
 ```
 
 Tests include:
 - `test_inference.py` — validation, prediction, auto-sum, consistency warnings, probability table.
 - `test_statistical_tests.py` — Kruskal-Wallis, Chi-square, duplicates, conflicts (skipped if CSV missing).
+- `test_manual_inputs.py` — derived totals, port and value validation for manual prediction.
+- `test_batch_csv.py` — CSV upload errors, size and row limits, row count of predictions.
+- `test_score_labels.py` — the score column is labelled as uncalibrated.
+- `test_model_page.py` — confusion matrix and cross-validation labels.
+- `test_design.py` — CSS and chart layout rules.
+- `test_streamlit_smoke.py`, `test_regression_matrix.py` — AppTest checks: all 8 pages open, valid manual flow, model missing.
 
 ## 8. Screenshots
 
@@ -138,7 +145,7 @@ Screenshots go in `docs/screenshots/`. A `.gitkeep` file is in place.
 2. Open Data Quality and show duplicates, conflicts, outliers.
 3. Open Traffic Analytics, filter by action, explore distributions and correlations.
 4. Open Statistics and show the Kruskal-Wallis and Chi-square test results.
-5. Open Manual Prediction, try a preset, and show the predicted action with probabilities.
+5. Open Manual Prediction, try a preset, and show the predicted action with the uncalibrated model scores.
 6. Upload a header-matching CSV and download batch predictions.
 7. Open Model Performance and explain the evaluation metrics.
 8. Explain constraints: historical dataset, no live packet interception.
@@ -156,7 +163,7 @@ Screenshots go in `docs/screenshots/`. A `.gitkeep` file is in place.
 - [x] Opens successfully with `python -m streamlit run src/app.py`.
 - [x] Displays correct stats from `data/raw/log2.csv`.
 - [x] Filtered charts work with no selected labels / empty rows.
-- [x] All 29 unit tests pass.
+- [x] All automated tests pass (`python -m pytest -q` and `python -m unittest discover -s tests`).
 - [x] Single predictions match `pipeline.predict()` on identical raw DataFrames.
 - [x] Batch results row count equals input row count, original columns preserved.
 - [x] Invalid/missing columns produce useful error messages.

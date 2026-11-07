@@ -145,7 +145,11 @@ header[data-testid="stHeader"] { background: transparent !important; border: non
   color: inherit !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] input[type="radio"] {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 /* Active item: cyan left bar via sibling trick — works on checked state */
 [data-testid="stSidebar"] [data-testid="stRadio"] input[type="radio"]:checked + div {
@@ -248,7 +252,7 @@ header[data-testid="stHeader"] { background: transparent !important; border: non
 }
 [data-testid="stMetricLabel"] p {
   font-family: var(--sans) !important;
-  font-size: 0.75rem !important;
+  font-size: 0.8rem !important;
   text-transform: uppercase;
   letter-spacing: .08em;
   color: var(--muted) !important;
@@ -604,7 +608,7 @@ button[kind="secondary"]:focus-visible {
   padding: 0.6rem 0;
   margin-top: 0.8rem;
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--muted);
   text-align: center;
   letter-spacing: .02em;
@@ -719,6 +723,39 @@ button[kind="secondary"]:focus-visible {
   [data-testid="stAppViewContainer"] .block-container h1 {
     font-size: 1.2rem !important;
   }
+}
+
+/* -- Task 7 polish: navigation, metric cards, captions ------------------ */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+  color: var(--cyan) !important;
+  background: rgba(34,211,238,.10);
+  border-left: 3px solid var(--cyan);
+  padding-left: 0.6rem;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+  color: var(--cyan) !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] > div,
+[data-testid="stMetricValue"] p {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+[data-testid="stMetricLabel"],
+[data-testid="stMetricLabel"] p {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+[data-testid="stAppViewContainer"] .block-container [data-testid="stCaptionContainer"] p {
+  font-size: 0.85rem !important;
 }
 """
 

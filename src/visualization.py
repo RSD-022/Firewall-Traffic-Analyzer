@@ -245,7 +245,7 @@ def spearman_heatmap(df: pd.DataFrame, title: str = "Spearman correlation") -> g
             bordercolor="#1F2C44",
         ),
     ))
-    fig.update_layout(title=title, height=550, width=700)
+    fig.update_layout(title=title, height=550)
     return _apply(fig)
 
 
@@ -342,7 +342,7 @@ def confusion_matrix_heatmap(
         title=title,
         xaxis_title="Predicted action",
         yaxis_title=("Actual action (row-normalized %)" if normalize else "Actual action (absolute counts)"),
-        height=480, width=520,
+        height=480,
     )
     return _apply(fig)
 
