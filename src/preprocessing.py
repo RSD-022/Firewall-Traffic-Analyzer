@@ -45,7 +45,10 @@ PORT_FEATURES = [
 
 FEATURE_SETS = {
     "full": PORT_FEATURES + TRAFFIC_FEATURES,
-
+    "without_redundant_totals": [
+    col for col in PORT_FEATURES + TRAFFIC_FEATURES
+    if col not in ("Bytes", "Packets")
+    ],
     "without_nat": [
         "Source Port",
         "Destination Port"
@@ -55,6 +58,7 @@ FEATURE_SETS = {
         "Source Port",
         "Destination Port"
     ]
+    
 }
 
 
