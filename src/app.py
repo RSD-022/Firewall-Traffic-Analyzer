@@ -15,10 +15,12 @@ import streamlit as st
 
 from inference import (
     DEFAULT_FEATURES,
+    apply_derived_totals,
     auto_sum_bytes,
     auto_sum_packets,
     check_consistency_warnings,
     get_features,
+    read_batch_csv,
     get_probability_table,
     load_metadata,
     load_trusted_pipeline,
@@ -151,12 +153,7 @@ def load_data() -> pd.DataFrame | None:
 
 
 def safe_upload(upload) -> pd.DataFrame:
-    if upload.size > MAX_CSV_BYTES:
-        raise ValueError("CSV larger than 20 MB. Select a smaller sample.")
-    df = pd.read_csv(upload)
-    if len(df) > MAX_ROWS:
-        raise ValueError("Upload more than 100,000 rows; please split it into smaller files.")
-    return df
+    return read_batch_csv(upload, max_bytes=MAX_CSV_BYTES, max_rows=MAX_ROWS)
 
 
 def section_heading(title: str, description: str):
@@ -617,23 +614,11 @@ elif page == "Manual Prediction":
                     default = defaults.get(feature, 0)
 
                 # Auto-computed fields shown as read-only info
-                if _has_bytes_trio and feature == "Bytes":
-                    sent_val = st.session_state.get("mp_Bytes Sent", defaults.get("Bytes Sent", 0))
-                    recv_val = st.session_state.get("mp_Bytes Received", defaults.get("Bytes Received", 0))
-                    auto_val = int(auto_sum_bytes(sent_val, recv_val))
-                    st.text_input(f"{feature} (auto-computed: Sent + Received)",
-                                  value=str(auto_val), disabled=True,
-                                  key=f"mp_display_{feature}")
-                    entries[feature] = auto_val
-                    continue
-                if _has_pkt_trio and feature == "Packets":
-                    sent_val = st.session_state.get("mp_pkts_sent", defaults.get("pkts_sent", 0))
-                    recv_val = st.session_state.get("mp_pkts_received", defaults.get("pkts_received", 0))
-                    auto_val = int(auto_sum_packets(sent_val, recv_val))
-                    st.text_input(f"{feature} (auto-computed: sent + received)",
-                                  value=str(auto_val), disabled=True,
-                                  key=f"mp_display_{feature}")
-                    entries[feature] = auto_val
+                # Totals are derived from the SUBMITTED directional values (see below)
+                if (_has_bytes_trio and feature == "Bytes") or (
+                        _has_pkt_trio and feature == "Packets"):
+                    st.caption(f"{feature}: computed on submit "
+                               "(sum of the sent and received fields).")
                     continue
 
                 entries[feature] = st.number_input(
@@ -654,6 +639,7 @@ elif page == "Manual Prediction":
         else:
             try:
                 model = selected_model()
+                entries = apply_derived_totals(entries)
                 input_df = pd.DataFrame([entries])
                 result = predict_dataframe(model, input_df, features)
                 predicted = str(result["Predicted Action"].iloc[0])
@@ -670,10 +656,19 @@ elif page == "Manual Prediction":
                     probs = prob_table.iloc[0].tolist()
                     fig = probability_bar_chart(classes, probs, predicted)
                     st.plotly_chart(fig, key="mp_proba_chart")
+                    st.caption("Model scores are not calibrated probabilities of "
+                               "correctness. For KNN they are the share of "
+                               "neighbour votes.")
                 else:
                     st.caption("No probability available for this model.")
 
+                st.caption(
+                    f"Values sent to the model: Bytes = {entries.get('Bytes')} "
+                    f"(Sent + Received), Packets = {entries.get('Packets')} "
+                    "(sent + received).")
                 st.caption("This is a model prediction, not a rule enforced by a real firewall.")
+            except ValueError as exc:
+                st.error(f"Input rejected: {exc}")
             except Exception as exc:
                 st.error(f"Prediction failed. Confirm your model and feature schema: {exc}")
 
@@ -725,6 +720,9 @@ elif page == "Batch Prediction":
                 output = predict_dataframe(model, df, features)
                 st.success(f"Predicted actions for {len(output):,} records.")
                 st.dataframe(output.head(50), hide_index=True)
+                st.caption("The score column is an uncalibrated model score "
+                           "(for KNN, a share of neighbour votes), not a "
+                           "probability that the prediction is correct.")
 
                 st.subheader("Predicted action distribution")
                 pred_counts = output["Predicted Action"].value_counts()
@@ -767,6 +765,29 @@ elif page == "Batch Prediction":
 elif page == "Model Performance":
     section_heading("Model Performance",
                     "Display the real results saved during offline evaluation.")
+
+    def _fmt(value, kind):
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            return "N/A"
+        return f"{value:.2%}" if kind == "pct" else f"{value:.3f}"
+
+    def _rare_class_row(m):
+        rows = m.get("per_class")
+        if isinstance(rows, list):
+            for r in rows:
+                if isinstance(r, dict) and r.get("class") == "reset-both":
+                    return {"recall": r.get("recall"), "support": r.get("support")}
+        rep = ROOT / "reports" / "classification_report.csv"
+        if rep.is_file():
+            try:
+                rep_df = pd.read_csv(rep, index_col=0)
+                if "reset-both" in rep_df.index:
+                    row = rep_df.loc["reset-both"]
+                    return {"recall": float(row["recall"]), "support": float(row["support"])}
+            except (OSError, ValueError, KeyError):
+                return None
+        return None
+
     if not METRICS_FILE.is_file():
         st.info("Metrics unavailable. Export models/metrics.json from your training "
                 "notebook. Do not invent metrics.")
@@ -777,119 +798,112 @@ elif page == "Model Performance":
                 raise ValueError("metrics.json must be a JSON object")
 
             st.subheader("Selected model")
-            st.write(metrics.get("model_name",
-                                 metadata.get("model_name", "Not specified")))
+            st.write(metrics.get("model_name", metadata.get("model_name", "Not specified")))
 
-            # Final test performance metrics
-            test_scores = metrics.get("test", metrics)
-            # Find reset-both results
-            rare_class = next(
-                (
-                    row for row in metrics.get("per_class", [])
-                    if row.get("class") == "reset-both"
-                ),
-                None
-            )
-            # Create four metric cards
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-               st.metric(
-                  "Test Accuracy",
-                  f"{test_scores['accuracy']:.2%}"
-                )
-            with col2:
-                st.metric(
-                    "Macro F1",
-                    f"{test_scores['f1_macro']:.3f}"
-                )     
-            with col3:  
-                st.metric(
-                    "Balanced Accuracy",
-                    f"{test_scores['balanced_accuracy']:.2%}"
-                )
-            with col4:
-                 if rare_class:
-                    st.metric(
-                        "Reset-both Recall",
-                        f"{rare_class['recall']:.2%}"
-                    )
-                 else:
-                     st.metric("Reset-both Recall", "N/A")
-            # Display minority-class explanation
-            if rare_class:
-                detected = round(
-                   rare_class["recall"] * rare_class["support"]
-               )
-                total = int(rare_class["support"])
+            # ---- Held-out test set: four cards ----
+            st.subheader("Held-out test set")
+            test_scores = metrics.get("test")
+            if not isinstance(test_scores, dict):
+                test_scores = metrics
+            rare = _rare_class_row(metrics)
+            cards = [
+                ("Test accuracy", test_scores.get("accuracy"), "pct"),
+                ("Macro-F1", test_scores.get("f1_macro", test_scores.get("macro_f1")), "score"),
+                ("Balanced accuracy", test_scores.get("balanced_accuracy"), "pct"),
+                ("Reset-both recall", rare.get("recall") if rare else None, "pct"),
+            ]
+            for box, (name, value, kind) in zip(st.columns(4), cards):
+                box.metric(name, _fmt(value, kind))
+            st.caption("Source: held-out test set, final exported KNN pipeline. "
+                       "These scores are NOT cross-validation results.")
+
+            if rare and isinstance(rare.get("recall"), (int, float)) \
+                    and isinstance(rare.get("support"), (int, float)):
+                total = int(round(rare["support"]))
+                detected = int(round(rare["recall"] * rare["support"]))
+                verb = "was" if detected == 1 else "were"
                 st.warning(
-                      f"Only {detected} out of {total} reset-both "
-                      "observations were correctly classified. "
-                      "Overall accuracy does not reflect this "
-                      "minority-class weakness."
-                   )
-            st.caption(
-                "Metrics computed on the held-out test dataset."
-            )
+                    f"Only {detected} of {total} reset-both test records {verb} "
+                    "classified correctly. Overall accuracy is high but "
+                    "minority-class recall is poor.",
+                    icon="⚠️",
+                )
 
-            # --- Model comparison (OPTIONAL) ---
-            if isinstance(metrics.get("model_comparison"), list) and metrics["model_comparison"]:
-                st.subheader("Model comparison")
-                comp_df = pd.DataFrame(metrics["model_comparison"])
+            # ---- Cross-validation comparison ----
+            comp_rows = metrics.get("model_comparison")
+            if not (isinstance(comp_rows, list) and comp_rows):
+                comp_rows = metrics.get("cv_model_comparison")
+            if isinstance(comp_rows, list) and comp_rows:
+                st.subheader("Cross-validation (training folds)")
+                st.caption("Model comparison from group-aware cross-validation on the "
+                           "training split only. Not held-out test results.")
+                comp_df = pd.DataFrame(comp_rows)
                 st.dataframe(comp_df, hide_index=True)
-                # Metric selector bar chart
                 numeric_metric_cols = [c for c in comp_df.columns
-                                       if c != "model" and c != "best_params"
+                                       if c not in ("model", "best_params")
                                        and pd.api.types.is_numeric_dtype(comp_df[c])]
                 if numeric_metric_cols and "model" in comp_df.columns:
                     sel_metric = st.selectbox("Metric to compare", numeric_metric_cols,
-                                             key="mp_metric_select")
+                                              key="mp_metric_select")
                     st.plotly_chart(metric_comparison_bar(comp_df, sel_metric),
-                                   key="mp_metric_bar")
+                                    key="mp_metric_bar")
 
-            # --- Confusion matrix (OPTIONAL) ---
+            abl_rows = metrics.get("cv_feature_ablation")
+            if isinstance(abl_rows, list) and abl_rows:
+                st.subheader("Feature-set ablation (cross-validation)")
+                st.dataframe(pd.DataFrame(abl_rows), hide_index=True)
+
+            # ---- Confusion matrix (held-out test set) ----
             cm_data = metrics.get("confusion_matrices") or metrics.get("confusion_matrix")
-            if cm_data is not None:
-                st.subheader("Confusion matrix (held-out test set)")
-
-                if isinstance(cm_data, dict):
-                    # Multiple models
-                    model_names = list(cm_data.keys())
-                    sel_cm_model = st.selectbox("Model", model_names, key="mp_cm_model")
-                    cm_entry = cm_data[sel_cm_model]
-                    if isinstance(cm_entry, dict):
-                        matrix = cm_entry.get("matrix", cm_entry)
-                        labels = cm_entry.get("class_labels",
-                                              metrics.get("class_labels", []))
-                    else:
-                        matrix = cm_entry
-                        labels = metrics.get("class_labels", [])
-                elif isinstance(cm_data, list):
-                    matrix = cm_data
-                    labels = metrics.get("class_labels", [])
+            st.subheader("Confusion matrix (held-out test set)")
+            matrix, labels = None, []
+            if isinstance(cm_data, dict) and cm_data:
+                names = list(cm_data.keys())
+                sel_cm_model = st.selectbox("Model", names, key="mp_cm_model")
+                entry = cm_data[sel_cm_model]
+                if isinstance(entry, dict):
+                    matrix = entry.get("matrix")
+                    labels = entry.get("class_labels", metrics.get("class_labels", []))
                 else:
-                    matrix = None
-                    labels = []
+                    matrix = entry
+                    labels = metrics.get("class_labels", [])
+            elif isinstance(cm_data, list):
+                matrix = cm_data
+                labels = metrics.get("class_labels", [])
 
-                if matrix is not None:
-                    normalize = st.toggle("Normalize (row %)", value=False,
-                                         key="mp_cm_normalize")
-                    if not isinstance(labels, list) or len(labels) != len(matrix):
-                        labels = [f"Class {i}" for i in range(len(matrix))]
-                    fig = confusion_matrix_heatmap(matrix, labels, normalize=normalize)
-                    st.plotly_chart(fig, key="mp_cm_heatmap")
+            if matrix is None:
+                st.info("No confusion matrix is stored in metrics.json. Ask the ML "
+                        "teammate to export it from Notebook 03; it is not computed here.")
+            else:
+                normalize = st.toggle("Show row-normalized % (each row sums to 100%)",
+                                      value=False, key="mp_cm_normalize")
+                if not isinstance(labels, list) or len(labels) != len(matrix):
+                    labels = [f"Class {i}" for i in range(len(matrix))]
+                mode = "row-normalized %" if normalize else "absolute counts"
+                fig = confusion_matrix_heatmap(
+                    matrix, labels, normalize=normalize,
+                    title=f"Confusion matrix, held-out test set ({mode})")
+                st.plotly_chart(fig, key="mp_cm_heatmap")
+                st.caption(f"Rows = actual action, columns = predicted action. "
+                           f"Showing {mode}.")
 
-            # --- Per-class metrics (OPTIONAL) ---
+            # ---- Per-class table ----
+            st.subheader("Per-class metrics (held-out test set)")
             if isinstance(metrics.get("per_class"), list) and metrics["per_class"]:
-                st.subheader("Per-class metrics")
                 st.dataframe(pd.DataFrame(metrics["per_class"]), hide_index=True)
+            else:
+                rep = ROOT / "reports" / "classification_report.csv"
+                if rep.is_file():
+                    st.dataframe(pd.read_csv(rep).rename(columns={"Unnamed: 0": "class"}),
+                                 hide_index=True)
+                else:
+                    st.info("Per-class metrics unavailable.")
 
-            # --- Feature importances (OPTIONAL) ---
             if isinstance(metrics.get("feature_importances"), list) and metrics["feature_importances"]:
                 st.subheader("Feature importances")
                 st.plotly_chart(feature_importance_bar(metrics["feature_importances"]),
                                 key="mp_feat_imp")
 
-            # --- Training features ---
             st.subheader("Training feature columns")
             st.code(", ".join(features), language="text")
 
@@ -898,8 +912,6 @@ elif page == "Model Performance":
                 "per-class metrics are uncertain and may not generalise.",
                 icon="⚠️",
             )
-            st.caption("All reported results must be computed on a held-out test set "
-                       "or clearly labelled otherwise.")
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             st.error(f"Unable to load evaluation metrics: {exc}")
 

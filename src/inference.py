@@ -19,6 +19,7 @@ DEFAULT_FEATURES = [
     "pkts_sent", "pkts_received",
 ]
 EXPECTED_CLASSES = ("allow", "deny", "drop", "reset-both")
+SCORE_COLUMN = "Highest model score (uncalibrated)"
 
 
 def get_features(metadata: dict[str, Any] | None = None) -> list[str]:
@@ -68,6 +69,29 @@ def validate_features(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return X
 
 
+MAX_CSV_BYTES = 20 * 1024 * 1024
+MAX_ROWS = 100_000
+
+
+def read_batch_csv(upload, max_bytes: int = MAX_CSV_BYTES, max_rows: int = MAX_ROWS) -> pd.DataFrame:
+    """Read an uploaded CSV and turn every failure into a readable ValueError."""
+    size = getattr(upload, "size", None)
+    if size is not None and size > max_bytes:
+        raise ValueError(f"CSV larger than {max_bytes // (1024 * 1024)} MB. Select a smaller sample.")
+    try:
+        df = pd.read_csv(upload)
+    except pd.errors.EmptyDataError:
+        raise ValueError("The CSV file is empty.")
+    except pd.errors.ParserError as exc:
+        raise ValueError(f"The file could not be parsed as CSV: {exc}")
+    except UnicodeDecodeError:
+        raise ValueError("The file is not valid UTF-8 text. Upload a plain CSV file.")
+    df.columns = [str(c).strip() for c in df.columns]
+    if len(df) > max_rows:
+        raise ValueError(f"More than {max_rows:,} rows; please split it into smaller files.")
+    return df
+
+
 def predict_dataframe(model, df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     X = validate_features(df, features)
     pred = model.predict(X)
@@ -79,7 +103,7 @@ def predict_dataframe(model, df: pd.DataFrame, features: list[str]) -> pd.DataFr
         try:
             proba = np.asarray(model.predict_proba(X))
             if proba.ndim == 2 and proba.shape[0] == len(X):
-                out["Model Confidence"] = np.round(proba.max(axis=1), 4)
+                out[SCORE_COLUMN] = np.round(proba.max(axis=1), 4)
         except (AttributeError, NotImplementedError):
             pass  # Some classifiers/pipelines do not expose probabilities.
     return out
@@ -130,6 +154,17 @@ def auto_sum_bytes(sent: float, received: float) -> float:
 def auto_sum_packets(sent: float, received: float) -> float:
     """Compute Packets = pkts_sent + pkts_received."""
     return sent + received
+
+
+def apply_derived_totals(entries: dict) -> dict:
+    """Return a copy of *entries* with Bytes and Packets computed from the
+    submitted directional values (Sent + Received)."""
+    out = dict(entries)
+    if {"Bytes Sent", "Bytes Received"}.issubset(out):
+        out["Bytes"] = auto_sum_bytes(out["Bytes Sent"], out["Bytes Received"])
+    if {"pkts_sent", "pkts_received"}.issubset(out):
+        out["Packets"] = auto_sum_packets(out["pkts_sent"], out["pkts_received"])
+    return out
 
 
 def check_consistency_warnings(df: pd.DataFrame) -> list[str]:
