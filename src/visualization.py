@@ -302,7 +302,7 @@ def metric_comparison_bar(df: pd.DataFrame, metric: str) -> go.Figure:
         text=df[metric].round(4), textposition="outside",
         textfont=dict(family=_MONO, color="#E6EDF7", size=11),
     ))
-    fig.update_layout(title=f"Model comparison — {metric}",
+    fig.update_layout(title=f"Cross-validation (training folds) — {metric}",
                       xaxis_title="Model", yaxis_title=metric)
     return _apply(fig, height=420)
 
@@ -340,7 +340,8 @@ def confusion_matrix_heatmap(
     ))
     fig.update_layout(
         title=title,
-        xaxis_title="Predicted", yaxis_title="Actual",
+        xaxis_title="Predicted action",
+        yaxis_title=("Actual action (row-normalized %)" if normalize else "Actual action (absolute counts)"),
         height=480, width=520,
     )
     return _apply(fig)
@@ -375,8 +376,8 @@ def probability_bar_chart(
         textfont=dict(family=_MONO, color="#E6EDF7", size=11),
     ))
     fig.update_layout(
-        title=f"Class probabilities (predicted: {predicted})",
-        xaxis_title="Action", yaxis_title="Probability",
+        title=f"Model score per class (predicted: {predicted})",
+        xaxis_title="Action", yaxis_title="Model score (uncalibrated)",
         yaxis_range=[0, 1.1],
     )
     return _apply(fig, height=380)
