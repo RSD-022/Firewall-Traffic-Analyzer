@@ -270,7 +270,9 @@ elif page == "Data Quality":
             total_rows = int(conflicts["total_rows"].sum())
             st.write(f"**{len(conflicts)} groups** covering **{total_rows} rows** have "
                      "identical 11-feature vectors with more than one Action label.")
-            st.dataframe(conflicts, hide_index=True)
+            st.dataframe(conflicts.rename(columns={"num_actions": "Distinct actions",
+                                                   "total_rows": "Rows in group"}),
+                         hide_index=True)
 
         # --- Class share before vs after dedup ---
         st.subheader("Class share: before vs after deduplication")
@@ -302,6 +304,7 @@ elif page == "Traffic Analytics":
             if "Action" in df.columns:
                 all_actions = sorted(df["Action"].dropna().astype(str).unique().tolist())
                 sel_actions = st.multiselect("Action", all_actions, default=all_actions,
+                                             help="Show only the selected actions. Remove one to hide it from every tab.",
                                              key="ta_action_filter")
             else:
                 sel_actions = None
@@ -316,6 +319,7 @@ elif page == "Traffic Analytics":
             if "Bytes" in df.columns:
                 bmin, bmax = int(df["Bytes"].min()), int(df["Bytes"].max())
                 bytes_range = st.slider("Bytes range", bmin, bmax, (bmin, bmax),
+                                        help="Keep only flows whose total Bytes fall inside this range.",
                                         key="ta_bytes_range")
             else:
                 bytes_range = None
@@ -324,11 +328,13 @@ elif page == "Traffic Analytics":
                 tmin = int(df["Elapsed Time (sec)"].min())
                 tmax = int(df["Elapsed Time (sec)"].max())
                 time_range = st.slider("Elapsed Time range", tmin, tmax, (tmin, tmax),
+                                       help="Keep only flows whose duration in seconds falls inside this range.",
                                        key="ta_time_range")
             else:
                 time_range = None
 
             exclude_dupes = st.toggle("Exclude exact duplicates", value=False,
+                                      help="Drop rows that are exact copies of an earlier row.",
                                       key="ta_exclude_dupes")
 
         # ----- Apply filters -----
@@ -455,10 +461,16 @@ elif page == "Statistics":
         modtime = DATA_FILE.stat().st_mtime
         path_str = str(DATA_FILE)
 
-        col_orig, col_dedup = st.columns(2)
-
         # --- Kruskal-Wallis ---
         st.subheader("a) Kruskal-Wallis H test: Bytes across Action classes")
+        with st.expander("How to read these numbers"):
+            st.markdown(
+                "- **H statistic**: larger means the Bytes distributions differ more between actions (rank-based test).\n"
+                "- **p-value**: how surprising a difference this large would be if all actions had the same Bytes distribution. "
+                "With this many rows almost any difference is significant, so also look at the effect size.\n"
+                "- **epsilon squared**: effect size, H / (n - 1). Closer to 1 means a stronger association.\n"
+                "- **n**: number of rows used."
+            )
         kw_orig = compute_kruskal(path_str, modtime, dedup=False)
         kw_dedup = compute_kruskal(path_str, modtime, dedup=True)
 
@@ -491,6 +503,13 @@ elif page == "Statistics":
 
         # --- Chi-square ---
         st.subheader("b) Chi-square: NAT Source Port status × Action")
+        with st.expander("How to read these numbers"):
+            st.markdown(
+                "- **chi-square / df**: size of the departure from independence, and its degrees of freedom.\n"
+                "- **p-value**: see above; very small values only say the association is not due to chance.\n"
+                "- **Cramer's V**: strength of association from 0 (none) to 1 (perfect).\n"
+                "- **Min expected count**: smallest expected cell count; the test is reliable when it is at least 5."
+            )
         chi_orig = compute_chi2(path_str, modtime, dedup=False)
         chi_dedup = compute_chi2(path_str, modtime, dedup=True)
 
@@ -598,6 +617,18 @@ elif page == "Manual Prediction":
                 "Packets": 20, "Elapsed Time (sec)": 1.0,
                 "pkts_sent": 10, "pkts_received": 10}
 
+    FEATURE_HELP = {
+        "Source Port": "Port the client used to open the connection (0 to 65535).",
+        "Destination Port": "Port of the service being contacted, for example 443 for HTTPS (0 to 65535).",
+        "NAT Source Port": "Source port after address translation (NAT). 0 usually means no NAT was applied.",
+        "NAT Destination Port": "Destination port after address translation (NAT). 0 usually means no NAT was applied.",
+        "Bytes Sent": "Bytes sent by the client side during the session. Cannot be negative.",
+        "Bytes Received": "Bytes received by the client side during the session. Cannot be negative.",
+        "pkts_sent": "Number of packets sent during the session. Cannot be negative.",
+        "pkts_received": "Number of packets received during the session. Cannot be negative.",
+        "Elapsed Time (sec)": "Duration of the session in seconds.",
+    }
+
     with st.form("manual_predict"):
         entries: dict[str, float | int] = {}
         cols = st.columns(2)
@@ -627,6 +658,7 @@ elif page == "Manual Prediction":
                     max_value=max_port,
                     value=float(default) if is_duration else int(default),
                     step=0.1 if is_duration else 1,
+                    help=FEATURE_HELP.get(feature),
                     key=ss_key,
                 )
         submitted = st.form_submit_button("Predict firewall action", type="primary",
@@ -948,9 +980,9 @@ Historical CSV → data cleaning → fitted preprocessing → classifier → pre
     st.subheader("Team")
     team = pd.DataFrame([
         {"Code": "RSD-009", "Responsibility": "Streamlit application"},
-        {"Code": "RSD-0XX", "Responsibility": "to be completed"},
-        {"Code": "RSD-0XX", "Responsibility": "to be completed"},
-        {"Code": "RSD-0XX", "Responsibility": "to be completed"},
+        {"Code": "RSD-020", "Responsibility": "Machine learning: model training, tuning and evaluation"},
+        {"Code": "RSD-022", "Responsibility": "Team leader and data preprocessing"},
+        {"Code": "RSD-002", "Responsibility": "Project documentation"},
     ])
     st.dataframe(team, hide_index=True)
 
@@ -973,8 +1005,8 @@ Historical CSV → data cleaning → fitted preprocessing → classifier → pre
         st.markdown(
             "Port 445 is used by SMB (Server Message Block). Many firewall policies block "
             "inbound SMB traffic because it is a common attack vector for ransomware and "
-            "lateral movement. In this particular firewall's policy, connections to port 445 "
-            "were overwhelmingly dropped."
+            "lateral movement. In this dataset, 12,851 of the 12,891 records with destination "
+            "port 445 (99.7 %) are labelled `drop` and the other 40 are `deny`."
         )
 
     with st.expander("What is target leakage?"):
