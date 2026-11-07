@@ -1,0 +1,21 @@
+Feature Set,Fold,Validation Rows,Overlapping Rows,Overlap (%)
+full,1,9148,0,0.0
+full,2,9147,0,0.0
+full,3,9147,0,0.0
+full,4,9147,0,0.0
+full,5,9147,0,0.0
+without_nat,1,9148,568,6.209007433318758
+without_nat,2,9147,523,5.717721657374002
+without_nat,3,9147,551,6.023832950694216
+without_nat,4,9147,537,5.870777304034109
+without_nat,5,9147,540,5.903574942604132
+ports_only,1,9148,3539,38.68605159597726
+ports_only,2,9147,3382,36.97387121460588
+ports_only,3,9147,3497,38.23111402645676
+ports_only,4,9147,3434,37.54236361648628
+ports_only,5,9147,3389,37.05039903793593
+without_redundant_totals,1,9148,0,0.0
+without_redundant_totals,2,9147,0,0.0
+without_redundant_totals,3,9147,0,0.0
+without_redundant_totals,4,9147,0,0.0
+without_redundant_totals,5,9147,0,0.0
