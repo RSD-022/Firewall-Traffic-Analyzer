@@ -1,0 +1,51 @@
+\chapter{Theoretical Foundations}\label{chap:fondements}
+
+\section{Introduction}
+\TODO{Chapter introduction}
+
+\section{Data Mining Process}
+% KDD / CRISP-DM process: selection, preprocessing, transformation, data mining, interpretation.
+% Show where each stage of the project fits (a draw.io diagram is possible).
+\TODO{Process overview and its connection to the following chapters}
+
+\section{Supervised Classification and Selected Models}
+% For EACH model: principle, key hyperparameters, strengths and limitations, and why it was selected for this project.
+% Use LaTeX formulas; include only those relevant to the experiments.
+\subsection{Baseline Classifier (Zero-R)}
+\TODO{Principle and role as a lower-bound baseline}
+
+\subsection{K-Nearest Neighbors}
+\TODO{Distance, choice of K, standardization, weighting}
+
+\subsection{Decision Tree and Random Forest}
+\TODO{Gini index, entropy, pruning, bagging, feature importance}
+
+\subsection{Naive Bayes}
+\TODO{Bayes' theorem, independence assumption, smoothing}
+
+\subsection{Support Vector Machines}
+\TODO{Margin, kernels, parameters C and gamma}
+
+\section{Model Evaluation}
+% Confusion matrix, precision, recall, F1-score, macro-F1, balanced accuracy, one-vs-rest ROC-AUC.
+% Explain why accuracy alone can be misleading when one class is extremely rare.
+\TODO{Definitions with formulas (\texttt{equation}) and justified metric selection}
+
+\section{Cross-Validation and Hyperparameter Tuning}
+% Stratified K-Fold, grouped cross-validation, GridSearchCV / RandomizedSearchCV (K >= 5),
+% separation between model tuning (cross-validation) and final testing.
+\TODO{Principles and justification of the evaluation protocol}
+
+\section{Statistical Tests}
+% Kruskal-Wallis (compare Bytes across the four actions), chi-square test of independence and Cramér's V
+% (zero or non-zero NAT Source Port against Action), Spearman correlation.
+% For each test: hypotheses, test statistic, conditions of use, and why it is appropriate here.
+\TODO{Three tests: definition, explanation, and role in the project}
+
+\section{Class Imbalance, Duplicates, and Data Leakage}
+% Rare classes, exact duplicates, conflicting labels, data leakage (features known only after the decision),
+% grouped splitting to prevent identical vectors from appearing in both training and test sets.
+\TODO{Concepts and risks, with references}
+
+\section{Conclusion}
+\TODO{Chapter conclusion and transition to Chapter~\ref{chap:donnees}}

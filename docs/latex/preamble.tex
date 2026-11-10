@@ -1,0 +1,71 @@
+%==========================================================================
+%  preamble.tex  -  packages and settings, loaded ONCE from main.tex
+%  Rules: no report text here. Do NOT load babel (EmpMemoire.cls already
+%  does). Load each package once. hyperref stays near the end.
+%  Do not name your own macros \N \R \Z \Q \C \F \K \L (the class uses them).
+%==========================================================================
+
+% ---- Used by EmpMemoire.cls (header box, chapter box) but not loaded by it
+\usepackage{boxedminipage}
+
+% ---- Fonts and encoding (also removes the "OT1 encoding" French warning)
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% ---- Maths
+\usepackage{amsmath,amssymb}
+
+% ---- French number format: \num{65532} -> 65 532 ; \num{0.94} -> 0,94
+\usepackage{siunitx}
+\sisetup{locale=FR}
+
+% ---- Images, colours, tables
+\usepackage{graphicx}
+\graphicspath{{figures/}{frontmatter/}}  % \includegraphics{ch03/class_distribution}
+% If TeXPage opens the whole repo, screenshots kept in docs/images can be
+% added with:  \graphicspath{{figures/}{frontmatter/}{../images/}}
+\usepackage[table]{xcolor}
+\usepackage{array,tabularx,longtable,multirow}
+
+% ---- Simple diagrams
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+% ---- Code listings (short snippets only, no accents inside the code)
+\usepackage{listings}
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!60!black},
+  commentstyle=\color{gray},
+  stringstyle=\color{red!50!black},
+  backgroundcolor=\color{gray!8},
+  numbers=left, numberstyle=\tiny\color{gray}, numbersep=5pt,
+  frame=single, breaklines=true, captionpos=b,
+  showstringspaces=false, tabsize=2
+}
+\lstset{style=pystyle}
+
+% ---- Acronyms: \ac{SVM} = full name + (SVM) on first use, then SVM
+\usepackage[printonlyused]{acronym}
+
+% ---- Running header: boxed "EMP" on the left, chapter title on the right
+\renewcommand{\chaptermark}[1]{\markboth{Chapter \thechapter. #1}{}}
+\fancyhead[L]{\begin{boxedminipage}{16.2cm}\small EMP\hfill\small\leftmark\end{boxedminipage}}
+
+% ---- Table of contents depth (chapter, section, subsection)
+\setcounter{tocdepth}{2}
+
+% ---- Drafting helper: shows a red marker. Search "A FAIRE" before submitting.
+\newcommand{\TODO}[1]{\textbf{\textcolor{red}{[TODO : #1]}}}
+% To hide every marker at once, replace the line above by:
+% \newcommand{\TODO}[1]{}
+
+% ---- hyperref: keep near the end. Student codes only in the PDF metadata.
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Intelligent Firewall Traffic Analyzer - Data Mining Mini-Project Report},
+  pdfauthor={Data Mining Project Team}
+}
+
+\usepackage{setspace}
