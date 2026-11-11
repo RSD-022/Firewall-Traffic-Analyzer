@@ -1,0 +1,3 @@
+Action,rows,nat_source_port_zero_share,median_bytes,median_packets,median_elapsed_sec
+deny,6434,0.9986,66.0,1.0,0.0
+reset-both,43,0.7442,146.0,1.0,0.0
