@@ -123,15 +123,39 @@ Firewall-Traffic-Analyzer/
 ├── notebooks/
 │   ├── 01_eda_and_cleaning.ipynb
 │   ├── 02_preprocessing_encoding.ipynb
-│   └── 03_model_training_evaluation.ipynb
+│   ├── 03_model_training_evaluation.ipynb
+│   └── 04_ml_improvement_experiments.ipynb
 │
 ├── src/
 │   ├── app.py
+│   ├── inference.py
 │   ├── preprocessing.py
-│   └── models.py
+│   ├── models.py
+│   ├── statistical_tests.py
+│   ├── visualization.py
+│   └── theme.py
+│
+├── models/
+│   ├── firewall_pipeline.joblib
+│   ├── metadata.json
+│   └── metrics.json
+│
+├── reports/
 │
 ├── docs/
+│   ├── latex/ 
+│   ├── md/   
+│   └── Rapport_MiniProject.pdf 
+│
+├── tests/
+│
+├── .streamlit/
 │
 ├── README.md
+├── README_APP.md
 ├── requirements.txt
+├── requirements-app.txt
 └── .gitignore
+```
+
+$$\begin{array}{ll} \textbf{Component} & \textbf{Description} \\ \hline \texttt{data/} & \text{Raw and processed datasets} \\ \texttt{notebooks/} & \text{Data analysis and ML experiments} \\ \texttt{src/} & \text{Main Python implementation} \\ \texttt{models/} & \text{Trained models and evaluation results} \\ \texttt{reports/} & \text{Analytical outputs} \\ \texttt{docs/} & \text{Academic documentation} \\ \texttt{tests/} & \text{Automated tests} \end{array}$$
