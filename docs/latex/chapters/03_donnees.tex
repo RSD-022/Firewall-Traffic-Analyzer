@@ -1,0 +1,59 @@
+\chapter{Dataset and Exploratory Data Analysis}\label{chap:donnees}
+
+\section{Introduction}
+\TODO{Chapter introduction}
+
+\section{Dataset Source and Description}
+% Source: UCI Internet Firewall Data (cite the source). Dataset size, number of attributes, target variable.
+% Schema table: name, meaning, type, notes (use \hline, bold headers, and a caption above the table).
+% Reminder: ports are identifiers, not continuous measurements.
+\TODO{Table describing the 12 columns (based on Notebook 01)}
+
+\section{Data Quality Audit}
+% Missing values, exact duplicates, distinct rows, conflicting labels.
+% All values must come from Notebook 01 (notebooks/01\_eda\_and\_cleaning.ipynb): reproduce them exactly.
+\TODO{Audit figures and their interpretation}
+
+\section{Univariate Analysis}
+% Distribution of the four actions (figure), skewness of Bytes / Packets / Elapsed Time, outliers.
+% Paragraph structure: introductory sentence with \ref, figure, interpretation paragraph.
+\TODO{Figures and interpretation}
+
+\section{Bivariate Analysis and Correlations}
+% Spearman correlation matrix, two exact identities (Bytes = Bytes Sent + Bytes Received; Packets = pkts\_sent + pkts\_received),
+% destination ports and actions, NAT.
+\TODO{Correlations, redundancy, and policy signatures}
+
+\section{Statistical Tests}
+% Test A: Kruskal-Wallis. Test B: chi-square test and Cramér's V. Report H, df, p (write p < 0.001 if the displayed p-value is 0 due to numerical precision),
+% effect size, and a cautious conclusion (association does not imply causation).
+\TODO{Results of the two tests and justification for their selection}
+
+\section{Summary and Identified Risks}
+% Class imbalance, duplicates, conflicting labels, risk of leakage through NAT-related features.
+\TODO{Brief summary in prose}
+
+\section{Conclusion}
+\TODO{Chapter conclusion and transition to Chapter~\ref{chap:methodologie}}
+
+% --- Figure template (uncomment when the file exists in figures/ch03/) ---
+% Figure~\ref{fig:class-distribution} shows the distribution of the four actions.
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=0.85\linewidth,keepaspectratio]{ch03/class_distribution}
+%   \caption{Distribution of Firewall Actions}
+%   \label{fig:class-distribution}
+% \end{figure}
+% --- Table template ---
+% \begin{table}[htbp]
+%   \centering
+%   \caption{Attribute Description}
+%   \label{tab:attributs}
+%   \begin{tabular}{|l|l|}
+%     \hline
+%     \textbf{Attribute} & \textbf{Role} \\
+%     \hline
+%     Bytes & Number of bytes transferred \\
+%     \hline
+%   \end{tabular}
+% \end{table}

@@ -1,0 +1,27 @@
+\chapter{Experimental Methodology}\label{chap:methodologie}
+
+\section{Introduction}
+\TODO{Chapter introduction}
+
+\section{Task Selection and Feature Availability}
+% Retrospective log classification. Table: features available before the decision / after the decision.
+% Justify whether NAT-related features and traffic volume features (Bytes, Packets, Elapsed Time) are used.
+\TODO{Selected task and feature availability table}
+
+\section{Preprocessing}
+% Duplicate handling (decision and justification), log1p transformation, standardization (KNN, SVM),
+% port encoding; everything must be included in a Pipeline fitted on the training data only (no data leakage).
+\TODO{Preprocessing pipeline with a diagram (draw.io) and justification for each step}
+
+\section{Data Splitting}
+% Grouped splitting: identical feature vectors must remain on the same side. Class counts (training / test),
+% random seed, number of rare-class examples in each split.
+\TODO{Principle, verified counts, and data splitting diagram}
+
+\section{Experimental Protocol}
+% Compared models, hyperparameter grids (table), cross-validation (K >= 5), systematic search,
+% evaluation metrics, final test set kept untouched until model selection is complete.
+\TODO{Complete experimental protocol and hyperparameter grid table}
+
+\section{Conclusion}
+\TODO{Chapter conclusion and transition to Chapter~\ref{chap:resultats}}

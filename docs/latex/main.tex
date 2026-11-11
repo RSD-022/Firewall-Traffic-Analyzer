@@ -1,0 +1,56 @@
+
+\documentclass[rennes1]{EmpMemoire}
+\input{preamble} % packages + settings, loaded once
+
+\begin{document}
+
+%---------------------------- Cover Page ---------------------------------
+\frontmatter                          % roman page numbers (i, ii, iii ...)
+\input{frontmatter/cover}
+
+%---------------------------- 1. Acknowledgements ------------------------
+\input{frontmatter/remerciements}
+
+%---------------------------- 2. Table of Contents -----------------------
+\tableofcontents
+
+%---------------------------- 3. List of Figures -------------------------
+\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+
+%---------------------------- 4. List of Tables --------------------------
+\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+
+%---------------------------- 5. List of Acronyms ------------------------
+\input{frontmatter/acronymes}
+
+%------------- 6. General Introduction (page counter restarts at 1) ------
+\let\cleardoublepage\clearpage        % avoids blank pages in two-sided mode
+\mainmatter                           % arabic page numbers, starts at 1
+\include{chapters/00_introduction}
+
+%---------------------------- 7. Chapters --------------------------------
+\include{chapters/01_contexte}
+\include{chapters/02_fondements}
+\include{chapters/03_donnees}
+\include{chapters/04_methodologie}
+\include{chapters/05_resultats}
+\include{chapters/06_application}
+
+%------------- 8. General Conclusion and Perspectives --------------------
+\include{chapters/07_conclusion}
+
+%---------------------------- 9. References ------------------------------
+\cleardoublepage
+\phantomsection                       % makes the TOC link point to the right page
+\addcontentsline{toc}{chapter}{References}
+\bibliographystyle{IEEEtran}
+\bibliography{references}             % references.bib, written WITHOUT ".bib"
+
+%---------------------------- 10. Appendices -----------------------------
+% No \appendix: this class prints numbered chapters as "Chapter I, II ...".
+% The appendices file uses \chapter*{Appendix A: ...} instead (see 08_annexes.tex).
+\include{chapters/08_annexes}
+
+\end{document}
