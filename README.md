@@ -158,4 +158,13 @@ Firewall-Traffic-Analyzer/
 └── .gitignore
 ```
 
-$$\begin{array}{ll} \textbf{Component} & \textbf{Description} \\ \hline \texttt{data/} & \text{Raw and processed datasets} \\ \texttt{notebooks/} & \text{Data analysis and ML experiments} \\ \texttt{src/} & \text{Main Python implementation} \\ \texttt{models/} & \text{Trained models and evaluation results} \\ \texttt{reports/} & \text{Analytical outputs} \\ \texttt{docs/} & \text{Academic documentation} \\ \texttt{tests/} & \text{Automated tests} \end{array}$$
+
+| Component | Description |
+| :--- | :--- |
+| `data/` | Raw and processed datasets |
+| `notebooks/` | Data analysis and ML experiments |
+| `src/` | Main Python implementation |
+| `models/` | Trained models and evaluation results |
+| `reports/` | Analytical outputs |
+| `docs/` | Academic documentation |
+| `tests/` | Automated tests |
