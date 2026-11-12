@@ -136,15 +136,30 @@ Hyperparameter optimization are performed using GridSearchCV or RandomizedSearch
 ## Repository Structure
 
 ```text
-── data/                                       # Raw and processed datasets
+
+├──.streamlit/                                # Streamlit configuration settings
+|
+├──data/                                       # Raw and processed datasets
 │   ├── raw/                                   # Original dataset files
 │   └── processed/                             # Cleaned and transformed datasets
+|
+├── docs/                                      # Academic documentation
+│   ├── latex/                                 # LaTeX source files
+│   ├── md/                                    # Markdown documentation
+│   └── Rapport_MiniProject.pdf                # Final academic project report
 │
+├── models/                                    # Trained models, saved pipelines, and evaluation metadata
+│   ├── firewall_pipeline.joblib               # Saved Machine Learning pipeline
+│   ├── metadata.json                          # Model metadata and configuration
+│   └── metrics.json                           # Model evaluation metrics
+|
 ├── notebooks/                                 # Data analysis and ML experiments
 │   ├── 01_eda_and_cleaning.ipynb              # Exploratory data analysis and data cleaning
 │   ├── 02_preprocessing_encoding.ipynb        # Data preprocessing, feature transformation, and encoding
 │   ├── 03_model_training_evaluation.ipynb     # Supervised model training and metric evaluation
 │   └── 04_ml_improvement_experiments.ipynb    # Hyperparameter tuning and model improvement experiments
+│
+├── reports/                                   # Analytical outputs and generated figures
 │
 ├── src/                                       # Main Python source implementation
 │   ├── app.py                                 # Streamlit application entry point
@@ -155,27 +170,14 @@ Hyperparameter optimization are performed using GridSearchCV or RandomizedSearch
 │   ├── visualization.py                       # Custom visualization functions
 │   └── theme.py                               # Application styling and UI theme
 │
-├── models/                                    # Trained models, saved pipelines, and evaluation metadata
-│   ├── firewall_pipeline.joblib               # Saved Machine Learning pipeline
-│   ├── metadata.json                          # Model metadata and configuration
-│   └── metrics.json                           # Model evaluation metrics
-│
-├── reports/                                   # Analytical outputs and generated figures
-│
-├── docs/                                      # Academic documentation
-│   ├── latex/                                 # LaTeX source files
-│   ├── md/                                    # Markdown documentation
-│   └── Rapport_MiniProject.pdf                # Final academic project report
-│
 ├── tests/                                     # Automated tests for project components
 │
-├── .streamlit/                                # Streamlit configuration settings
+
 │
 ├── README.md                                  # Main project documentation
 ├── README_APP_SETUP_USAGE.md                              # Application-specific documentation and usage guide
 ├── requirements.txt                           # Core project dependencies
 ├── requirements-app.txt                       # Web application dependencies
-└── .gitignore                                 # Specifies files and folders excluded from Git
 
 ```
 
