@@ -179,7 +179,14 @@ Hyperparameter optimization will later be performed using GridSearchCV or Random
 
 ```
 
+## Documentation
 
+The following resources provide additional information about the project, its implementation, and its usage:
+
+- **Academic Report:** [Rapport_MiniProject.pdf](docs/Rapport_MiniProject.pdf) — Detailed explanation of the problem, methodology, experiments, results, and conclusions.
+- **Application User Guide:** [README_APP.md](README_APP.md) — Instructions for using the application and exploring its functionalities.
+- **Jupyter Notebooks:** [notebooks/](notebooks/) — Step-by-step documentation of data exploration, preprocessing, model training, evaluation, and experiments.
+- **Source Code:** [src/](src/) — Implementation of the application's main components and machine learning pipeline.
 
 
 
