@@ -142,3 +142,87 @@ On Windows PowerShell, use `$env:FIREWALL_MODEL_FILE="..."` instead of `export`.
 | "Invalid CSV" on Batch Prediction | Use the template from the page. The file must contain every model input column, be under 20 MB, and have at most 100,000 rows. |
 
 ---
+
+
+
+
+
+
+
+
+## Usage
+
+### 1. Launch the Streamlit application
+
+```bash
+python -m streamlit run src/app.py
+```
+
+The app opens at **http://localhost:8501**. Use the sidebar to switch between the 8 pages. Press `Ctrl + C` in the terminal to stop it.
+
+| Page | Use it to |
+|---|---|
+| Overview | See record counts, the action distribution and known limitations |
+| Data Quality | Inspect duplicates, conflicting labels and outliers |
+| Traffic Analytics | Filter the data and explore distributions, frequencies and correlations |
+| Statistics | View the Kruskal-Wallis and Chi-square test results |
+| Manual Prediction | Classify a single network flow |
+| Batch Prediction | Classify many flows from a CSV file |
+| Model Performance | Review the evaluation of the trained model |
+| About & FAQ | Read the objective, methodology and limitations |
+
+### 2. Run the Jupyter notebooks
+
+**Option A: JupyterLab**
+```bash
+jupyter lab
+```
+Open the `notebooks/` folder in the browser window that appears.
+
+**Option B: VS Code**
+Open the `.ipynb` file and choose the `.venv` Python environment as the kernel (top right).
+
+Run each notebook **from top to bottom** (Restart & Run All), in this order:
+
+| Notebook | Purpose |
+|---|---|
+| `01_eda_and_cleaning.ipynb` | Exploratory analysis and data cleaning |
+| `02_preprocessing_encoding.ipynb` | Encoding, scaling, and creation of the train and test files |
+| `03_model_training_evaluation.ipynb` | Compares the six classifiers, tunes the best one, evaluates it once on the test set and exports the model |
+| `04_ml_improvement_experiments.ipynb` | Optional: rare-class analysis, feature ablation and importance |
+
+Notebook 03 needs the files created by Notebook 02. Model training and tuning can take several minutes (the KNN comparison alone takes about 3 minutes).
+
+### 3. Use the classification functionality
+
+The model predicts one of four firewall actions: `allow`, `deny`, `drop` or `reset-both`.
+
+**Single flow (Manual Prediction)**
+1. Open **Manual Prediction**.
+2. Click an example (**HTTPS-like**, **SMB port 445**, **VNC port 5900**) or enter your own values.
+3. Fill in the fields: Source Port, Destination Port, NAT Source Port, NAT Destination Port, Bytes Sent, Bytes Received, Packets sent, Packets received and Elapsed Time. *Bytes* and *Packets* totals are computed automatically.
+4. Click **Predict firewall action**.
+5. Read the predicted action and the bar chart of model scores.
+
+**Many flows (Batch Prediction)**
+1. Open **Batch Prediction**.
+2. Click **Download header-only CSV template**.
+3. Fill the template with your records. All the model's input columns are required. An `Action` column is optional and is never used as input.
+4. Upload the file (maximum 20 MB and 100,000 rows) and check the preview and any warnings.
+5. Click **Run batch prediction**.
+6. Review the predictions, the distribution chart and, if your file had an `Action` column, the observed vs predicted counts.
+7. Click **Download predictions CSV**.
+
+> Model scores are not calibrated probabilities. For KNN, they are the share of neighbour votes. Predictions describe historical firewall behaviour and are not security decisions.
+
+### 4. Where to find the results
+
+| Result | Location |
+|---|---|
+| Trained model | `models/firewall_pipeline.joblib` |
+| Model settings and input columns | `models/metadata.json` |
+| Test metrics, confusion matrix, model comparison | `models/metrics.json` (shown on the **Model Performance** page) |
+| Model comparison, feature ablation and classification report tables | `reports/` (`model_comparison.csv`, `feature_ablation.csv`, `classification_report.csv`) |
+| Train and test splits | `data/processed/train.csv` and `test.csv` |
+| Batch predictions | `firewall_predictions.csv`, downloaded through your browser (usually your **Downloads** folder) |
+| Filtered traffic data | `filtered_firewall_data.csv`, downloaded from the **Traffic Analytics** data table tab |
