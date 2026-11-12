@@ -38,14 +38,17 @@ Activate it:
 You should now see `(.venv)` at the start of your terminal line. Repeat this activation command every time you open a new terminal.
 
 ### Step 3: Install the packages
-```bash
-python -m pip install -r requirements.txt
-```
 
-This installs the dashboard (Streamlit, Plotly), the machine learning tools (scikit-learn, pandas, NumPy, SciPy), the notebook tools (JupyterLab) and the test tool (pytest). All versions are fixed in `requirements.txt` so everyone gets the same setup.
+Choose one option:
 
-> **Important:** keep scikit-learn at version **1.9.1**. The trained model file was saved with that version and may not load with another.
-> A lighter `requirements-app.txt` (dashboard only) exists in the repository , Use it if you only want to run the app and not the notebooks.
+| I want to... | Command |
+|---|---|
+| Run everything (dashboard, notebooks, tests) | `python -m pip install -r requirements.txt` |
+| Only run the dashboard | `python -m pip install -r requirements-app.txt` |
+
+`requirements-app.txt` installs only the 7 packages the dashboard needs (Streamlit, pandas, NumPy, scikit-learn, joblib, Plotly, SciPy). It does not include JupyterLab, matplotlib, seaborn or pytest, so use `requirements.txt` for the notebooks and tests.
+
+> **Important:** the model in `models/` was trained with scikit-learn **1.9.1**. Check your version with `pip show scikit-learn`, and install 1.9.1 if it differs.
 
 ### Step 4: Add the dataset
 1. Download the **UCI Internet Firewall Data** (dataset #542) from the UCI Machine Learning Repository. from "https://archive.ics.uci.edu/dataset/542/internet+firewall+data"
