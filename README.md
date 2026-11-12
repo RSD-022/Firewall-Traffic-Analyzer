@@ -100,7 +100,7 @@ The target variable is:
 
 This project follows a **Supervised Classification** approach.
 
-The required Machine Learning algorithms that will be studied are:
+The required Machine Learning algorithms:
 
 1. Zero-R / Dummy Classifier
 2. K-Nearest Neighbors
@@ -109,7 +109,7 @@ The required Machine Learning algorithms that will be studied are:
 5. Naive Bayes
 6. Support Vector Machine
 
-Hyperparameter optimization will later be performed using GridSearchCV or RandomizedSearchCV with cross-validation.
+Hyperparameter optimization are performed using GridSearchCV or RandomizedSearchCV with cross-validation.
 
 
 ## Project Pipeline & Architecture
