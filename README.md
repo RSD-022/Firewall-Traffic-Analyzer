@@ -181,3 +181,18 @@ Hyperparameter optimization will later be performed using GridSearchCV or Random
 
 
 
+
+
+
+## Team Contributions
+
+| Member | Role | Responsibilities |
+|---|---|---|
+| **RSD-022** | Team Leader, Data Preprocessing and EDA | Project coordination, data cleaning, exploratory analysis, preprocessing and encoding pipeline, statistical analysis |
+| **RSD-020** | Machine Learning | Model training, evaluation, hyperparameter tuning and model export |
+| **RSD-009** | Streamlit Application | Interactive dashboard, visualizations, prediction interfaces and model integration |
+| **RSD-002** | Documentation | Project documentation, README, and reporting of features, methodology and limitations |
+
+
+
+
