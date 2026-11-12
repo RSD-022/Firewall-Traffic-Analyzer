@@ -83,6 +83,19 @@ The target variable is:
 
 - Action
 
+## App Key Features
+
+- **Historical firewall traffic classification** (allow, deny, drop, reset-both) using supervised machine learning on the UCI Internet Firewall Data (dataset #542).
+- **Data quality assessment:** duplicate detection, conflicting-label analysis and outlier screening.
+- **Statistical testing:** Kruskal-Wallis (Bytes by action) and Chi-square with Cramér's V (NAT source port status by action), on original and deduplicated data.
+- **Comparison of six classifiers** (Dummy baseline, KNN, Decision Tree, Random Forest, Gaussian Naive Bayes, Linear SVM) using group-aware 5-fold cross-validation and macro-F1.
+- **Hyperparameter optimization** of the best model with GridSearchCV (selected: KNN, 21 neighbors, distance weighting).
+- **Feature ablation and rare-class analysis**, including class weighting, permutation importance and an assessment of feature availability.
+- **Interactive Streamlit dashboard** with traffic analytics, single-flow prediction, batch CSV prediction and a model performance page.
+- **Trained scikit-learn pipeline** (preprocessing and classifier) exported for inference.
+
+
+
 ## Data Mining Approach
 
 This project follows a **Supervised Classification** approach.
