@@ -175,7 +175,7 @@ Hyperparameter optimization are performed using GridSearchCV or RandomizedSearch
 
 │
 ├── README.md                                  # Main project documentation
-├── README_APP_SETUP_USAGE.md                              # Application-specific documentation and usage guide
+├── README_APP_SETUP_USAGE.md                  # Application-specific documentation and usage guide
 ├── requirements.txt                           # Core project dependencies
 ├── requirements-app.txt                       # Web application dependencies
 
