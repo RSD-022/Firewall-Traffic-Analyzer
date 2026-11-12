@@ -18,11 +18,26 @@ The possible firewall actions are:
 
 Modern firewalls generate large amounts of network traffic logs. Analyzing these logs manually can be difficult and time-consuming.
 
-The goal of this project is to use Data Mining and supervised Machine Learning techniques to learn patterns from historical firewall traffic and predict the firewall action associated with a network flow.
+The goal of this project is to use Data Mining and supervised Machine Learning techniques to learn patterns from historical firewall traffic and predict the firewall action associated with a network flow based on patterns learned from historical data.
 
 The general prediction problem is:
 
 Network Flow Features → Machine Learning Model → Firewall Action
+
+### Scope & System Behavior
+
+It is important to note that **this project is a predictive and analytical model, not an active enforcement agent.**
+
+* **What it *doesn't* do:** It does not sit inline on the network path, intercept live packets, or autonomously decide to block connections in real-time (unlike an active Intrusion Prevention System or inline firewall enforcement tool).
+* **What it *does* do:** It analyzes network traffic characteristics and leverages supervised machine learning to predict the most appropriate or historical action associated with a data flow.
+
+#### Why This Predictive Role Matters
+
+Even though the model does not execute live network blocks, its predictive capabilities provide significant value in cybersecurity operations:
+
+1. **Policy Auditing & Consistency Checks:** If the model predicts a `Drop` or `Deny` based on deep traffic patterns, but historical logs indicate an `Allow`, it flags a potential security gap, policy conflict, or loophole in the firewall's rule base.
+2. **Offline Log Intelligence:** Security teams can run bulk historical log data through the model to surface anomalies and highlight traffic that mimics blocked signatures but previously slipped through.
+3. **Decision Support (Human-in-the-Loop):** It acts as an intelligent analytical assistant for security analysts, helping them understand historical decision rationales and evaluate complex or ambiguous traffic behaviors.
 
 ## Dataset
 
@@ -83,88 +98,73 @@ The required Machine Learning algorithms that will be studied are:
 
 Hyperparameter optimization will later be performed using GridSearchCV or RandomizedSearchCV with cross-validation.
 
-## Project Workflow
 
-The project follows the following pipeline:
+## Project Pipeline & Architecture
 
-Raw Dataset
-    ↓
-Data Understanding
-    ↓
-Data Cleaning
-    ↓
-Exploratory Data Analysis
-    ↓
-Statistical Analysis
-    ↓
-Preprocessing
-    ↓
-Train / Test Split
-    ↓
-Machine Learning Models
-    ↓
-Hyperparameter Optimization
-    ↓
-Model Evaluation
-    ↓
-Model Comparison
-    ↓
-Streamlit Application
+**Phase 1: Data Preparation & Understanding**
+= Raw Dataset Collection -> Data Understanding -> Data Cleaning 
+
+**Phase 2: Analysis & Insights**
+= Exploratory Data Analysis -> Statistical Analysis 
+
+**Phase 3: Feature Engineering & Setup**
+= Preprocessing -> Train / Test Split
+
+**Phase 4: Modeling & Optimization**
+= Machine Learning Models -> Hyperparameter Optimization -> Model Evaluation -> Model Comparison 
+
+**Phase 5: Deployment**
+= Streamlit Application
+
+
+
+
 
 ## Repository Structure
 
 ```text
-Firewall-Traffic-Analyzer/
+── data/                                       # Raw and processed datasets
+│   ├── raw/                                   # Original dataset files
+│   └── processed/                             # Cleaned and transformed datasets
 │
-├── data/
-│   ├── raw/
-│   └── processed/
+├── notebooks/                                 # Data analysis and ML experiments
+│   ├── 01_eda_and_cleaning.ipynb              # Exploratory data analysis and data cleaning
+│   ├── 02_preprocessing_encoding.ipynb        # Data preprocessing, feature transformation, and encoding
+│   ├── 03_model_training_evaluation.ipynb     # Supervised model training and metric evaluation
+│   └── 04_ml_improvement_experiments.ipynb    # Hyperparameter tuning and model improvement experiments
 │
-├── notebooks/
-│   ├── 01_eda_and_cleaning.ipynb
-│   ├── 02_preprocessing_encoding.ipynb
-│   ├── 03_model_training_evaluation.ipynb
-│   └── 04_ml_improvement_experiments.ipynb
+├── src/                                       # Main Python source implementation
+│   ├── app.py                                 # Streamlit application entry point
+│   ├── inference.py                           # Loads the trained pipeline and performs predictions
+│   ├── preprocessing.py                       # Data preprocessing operations
+│   ├── models.py                              # Machine Learning model definitions
+│   ├── statistical_tests.py                   # Statistical analysis and tests
+│   ├── visualization.py                       # Custom visualization functions
+│   └── theme.py                               # Application styling and UI theme
 │
-├── src/
-│   ├── app.py
-│   ├── inference.py
-│   ├── preprocessing.py
-│   ├── models.py
-│   ├── statistical_tests.py
-│   ├── visualization.py
-│   └── theme.py
+├── models/                                    # Trained models, saved pipelines, and evaluation metadata
+│   ├── firewall_pipeline.joblib               # Saved Machine Learning pipeline
+│   ├── metadata.json                          # Model metadata and configuration
+│   └── metrics.json                           # Model evaluation metrics
 │
-├── models/
-│   ├── firewall_pipeline.joblib
-│   ├── metadata.json
-│   └── metrics.json
+├── reports/                                   # Analytical outputs and generated figures
 │
-├── reports/
+├── docs/                                      # Academic documentation
+│   ├── latex/                                 # LaTeX source files
+│   ├── md/                                    # Markdown documentation
+│   └── Rapport_MiniProject.pdf                # Final academic project report
 │
-├── docs/
-│   ├── latex/ 
-│   ├── md/   
-│   └── Rapport_MiniProject.pdf 
+├── tests/                                     # Automated tests for project components
 │
-├── tests/
+├── .streamlit/                                # Streamlit configuration settings
 │
-├── .streamlit/
-│
-├── README.md
-├── README_APP.md
-├── requirements.txt
-├── requirements-app.txt
-└── .gitignore
+├── README.md                                  # Main project documentation
+├── README_APP.md                              # Application-specific documentation and usage guide
+├── requirements.txt                           # Core project dependencies
+├── requirements-app.txt                       # Web application dependencies
+└── .gitignore                                 # Specifies files and folders excluded from Git
+
 ```
 
 
-| Component | Description |
-| :--- | :--- |
-| `data/` | Raw and processed datasets |
-| `notebooks/` | Data analysis and ML experiments |
-| `src/` | Main Python implementation |
-| `models/` | Trained models and evaluation results |
-| `reports/` | Analytical outputs |
-| `docs/` | Academic documentation |
-| `tests/` | Automated tests |
+
