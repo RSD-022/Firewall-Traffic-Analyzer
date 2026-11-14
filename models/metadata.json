@@ -2,7 +2,7 @@
   "project": "Intelligent Firewall Traffic Analyzer",
   "training_source": "data/processed/train.csv",
   "test_source": "data/processed/test.csv",
-  "model_name": "KNN",
+  "model_name": "Decision Tree",
   "feature_set": "full",
   "feature_columns": [
     "Source Port",
@@ -26,10 +26,15 @@
   "random_state": 42,
   "cv_folds": 5,
   "selection_metric": "macro_f1",
+  "selection_rule": "Best CV macro-F1 group (Friedman p = 0.63 between RF, KNN, DT); simplest and fastest model kept.",
   "best_params": {
-    "classifier__n_neighbors": 21,
-    "classifier__weights": "distance"
+    "classifier__ccp_alpha": 0.0,
+    "classifier__class_weight": null,
+    "classifier__criterion": "gini",
+    "classifier__max_depth": 20,
+    "classifier__min_samples_leaf": 1
   },
-  "trained_at_utc": "2026-11-02T21:20:33.360800+00:00",
+  "tuning_source": "notebooks/05_full_tuning_benchmark.ipynb",
+  "trained_at_utc": "2026-11-14T16:39:54.163093+00:00",
   "warning": "Historical action prediction; full-feature measurements may be post-decision variables."
 }

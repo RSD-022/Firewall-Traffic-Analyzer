@@ -1,0 +1,31 @@
+|--- Elapsed Time (sec) <= -1.04
+|   |--- Destination Port_445 <= 0.50
+|   |   |--- Packets <= -0.55
+|   |   |   |--- NAT Destination Port_53 <= 0.50
+|   |   |   |   |--- truncated branch of depth 11
+|   |   |   |--- NAT Destination Port_53 >  0.50
+|   |   |   |   |--- class: allow
+|   |   |--- Packets >  -0.55
+|   |   |   |--- Destination Port_3389 <= 0.50
+|   |   |   |   |--- truncated branch of depth 6
+|   |   |   |--- Destination Port_3389 >  0.50
+|   |   |   |   |--- class: reset-both
+|   |--- Destination Port_445 >  0.50
+|   |   |--- Bytes Sent <= -0.72
+|   |   |   |--- class: deny
+|   |   |--- Bytes Sent >  -0.72
+|   |   |   |--- Bytes Sent <= -0.69
+|   |   |   |   |--- class: drop
+|   |   |   |--- Bytes Sent >  -0.69
+|   |   |   |   |--- truncated branch of depth 2
+|--- Elapsed Time (sec) >  -1.04
+|   |--- Elapsed Time (sec) <= -0.76
+|   |   |--- NAT Destination Port_3389 <= 0.50
+|   |   |   |--- Destination Port_22 <= 0.50
+|   |   |   |   |--- class: allow
+|   |   |   |--- Destination Port_22 >  0.50
+|   |   |   |   |--- class: deny
+|   |   |--- NAT Destination Port_3389 >  0.50
+|   |   |   |--- class: reset-both
+|   |--- Elapsed Time (sec) >  -0.76
+|   |   |--- class: allow

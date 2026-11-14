@@ -689,8 +689,8 @@ elif page == "Manual Prediction":
                     fig = probability_bar_chart(classes, probs, predicted)
                     st.plotly_chart(fig, key="mp_proba_chart")
                     st.caption("Model scores are not calibrated probabilities of "
-                               "correctness. For KNN they are the share of "
-                               "neighbour votes.")
+                               "correctness. For a decision tree they are the share "
+                               "of training flows of each class in the reached leaf.")
                 else:
                     st.caption("No probability available for this model.")
 
@@ -753,8 +753,8 @@ elif page == "Batch Prediction":
                 st.success(f"Predicted actions for {len(output):,} records.")
                 st.dataframe(output.head(50), hide_index=True)
                 st.caption("The score column is an uncalibrated model score "
-                           "(for KNN, a share of neighbour votes), not a "
-                           "probability that the prediction is correct.")
+                           "(for a decision tree, the class share in the reached "
+                           "leaf), not a probability that the prediction is correct.")
 
                 st.subheader("Predicted action distribution")
                 pred_counts = output["Predicted Action"].value_counts()
@@ -846,7 +846,8 @@ elif page == "Model Performance":
             ]
             for box, (name, value, kind) in zip(st.columns(4), cards):
                 box.metric(name, _fmt(value, kind))
-            st.caption("Source: held-out test set, final exported KNN pipeline. "
+            st.caption(f"Source: held-out test set, final exported "
+                       f"{metrics.get('model_name', 'model')} pipeline. "
                        "These scores are NOT cross-validation results.")
 
             if rare and isinstance(rare.get("recall"), (int, float)) \

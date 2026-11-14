@@ -1,0 +1,4 @@
+test,statistic,p_value
+"Friedman, all paired models (CV folds)",17.13684210526316,0.0018181189613990431
+"Friedman, top 3 paired models (CV folds)",0.9333333333333371,0.6270890852730551
+McNemar Random Forest vs Decision Tree,0.0,1.0

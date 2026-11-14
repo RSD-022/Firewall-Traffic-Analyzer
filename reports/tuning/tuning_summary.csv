@@ -1,0 +1,7 @@
+model,n_candidates,train_rows,best_params,cv_macro_f1_mean,cv_macro_f1_std,cv_train_macro_f1,search_seconds
+Random Forest,8,45736,"{'class_weight': None, 'max_features': 0.5, 'min_samples_leaf': 2, 'n_estimators': 200}",0.8479300098851219,0.0377905402749861,0.8499834294138315,45.6
+KNN,24,45736,"{'n_neighbors': 5, 'p': 1, 'weights': 'distance'}",0.8478173254744007,0.03781783173186111,0.8500457660964159,796.1
+Decision Tree,64,45736,"{'ccp_alpha': 0.0, 'class_weight': None, 'criterion': 'gini', 'max_depth': 20, 'min_samples_leaf': 1}",0.8478123081920866,0.03785467050563299,0.8500457660964159,26.0
+SVM (SVC),16,12043,"{'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}",0.8417052534191598,0.051594603522092025,0.8492976096003468,5.8
+Gaussian Naive Bayes,7,45736,{'var_smoothing': np.float64(1e-05)},0.7075991485524816,0.005568548641882805,0.7090042609644893,9.6
+Dummy (Zero-R),3,45736,{'strategy': 'stratified'},0.25054235971092187,0.005457164709023129,0.2522979777956954,12.5

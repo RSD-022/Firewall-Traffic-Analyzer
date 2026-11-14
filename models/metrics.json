@@ -1,9 +1,9 @@
 {
-  "model_name": "KNN",
-  "accuracy": 0.9984257477698093,
-  "balanced_accuracy": 0.7716055775174245,
-  "macro_f1": 0.7898770007371495,
-  "weighted_f1": 0.9980627721227328,
+  "model_name": "Decision Tree",
+  "accuracy": 0.9985,
+  "balanced_accuracy": 0.7716,
+  "macro_f1": 0.79,
+  "weighted_f1": 0.9981,
   "class_labels": [
     "allow",
     "deny",
@@ -12,8 +12,8 @@
   ],
   "confusion_matrix": [
     [
-      7487,
-      1,
+      7488,
+      0,
       0,
       0
     ],
@@ -37,6 +37,74 @@
     ]
   ],
   "confusion_matrices": {
+    "Decision Tree": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          7488,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1601,
+          7,
+          0
+        ],
+        [
+          0,
+          0,
+          2327,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          1
+        ]
+      ]
+    },
+    "Random Forest": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          7488,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1601,
+          7,
+          0
+        ],
+        [
+          0,
+          0,
+          2327,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          1
+        ]
+      ]
+    },
     "KNN": {
       "class_labels": [
         "allow",
@@ -70,21 +138,123 @@
           1
         ]
       ]
+    },
+    "SVM (SVC)": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          7485,
+          3,
+          0,
+          0
+        ],
+        [
+          0,
+          1601,
+          7,
+          0
+        ],
+        [
+          0,
+          0,
+          2327,
+          0
+        ],
+        [
+          0,
+          10,
+          0,
+          1
+        ]
+      ]
+    },
+    "Gaussian Naive Bayes": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          7438,
+          0,
+          0,
+          50
+        ],
+        [
+          13,
+          1090,
+          7,
+          498
+        ],
+        [
+          0,
+          1,
+          2326,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          11
+        ]
+      ]
+    },
+    "Dummy (Zero-R)": {
+      "class_labels": [
+        "allow",
+        "deny",
+        "drop",
+        "reset-both"
+      ],
+      "matrix": [
+        [
+          4923,
+          1039,
+          1521,
+          5
+        ],
+        [
+          1075,
+          220,
+          313,
+          0
+        ],
+        [
+          1541,
+          310,
+          476,
+          0
+        ],
+        [
+          4,
+          3,
+          4,
+          0
+        ]
+      ]
     }
   },
   "per_class": [
     {
       "class": "allow",
       "precision": 1.0,
-      "recall": 0.9998664529914529,
-      "f1": 0.9999332220367279,
+      "recall": 1.0,
+      "f1": 1.0,
       "support": 7488
     },
     {
       "class": "deny",
-      "precision": 0.9931761786600496,
+      "precision": 0.9937926753569212,
       "recall": 0.9956467661691543,
-      "f1": 0.9944099378881988,
+      "f1": 0.9947188567878223,
       "support": 1608
     },
     {
@@ -104,150 +274,196 @@
   ],
   "model_comparison": [
     {
-      "model": "KNN",
-      "macro_f1": 0.8477468083893456,
-      "weighted_f1": 0.9981397393086777,
-      "balanced_accuracy": 0.8138204147447917,
-      "accuracy": 0.9983601515335991,
-      "cv_mean": 0.8477468083893456,
-      "cv_std": 0.03778163440349529,
-      "train_time_sec": 168.5,
-      "best_params": "{'classifier__n_neighbors': 21, 'classifier__weights': 'distance'}"
-    },
-    {
-      "model": "Linear SVM",
-      "macro_f1": 0.8112819465190844,
-      "weighted_f1": 0.9975579058007137,
-      "balanced_accuracy": 0.8124965668157282,
-      "accuracy": 0.9975292899739087,
-      "cv_mean": 0.8112819465190844,
-      "cv_std": 0.016813273860101167,
-      "train_time_sec": 13.83,
-      "best_params": "default"
-    },
-    {
       "model": "Random Forest",
-      "macro_f1": 0.7464366051768819,
-      "weighted_f1": 0.986738303671751,
-      "balanced_accuracy": 0.9313791458566169,
-      "accuracy": 0.9779604959828989,
-      "cv_mean": 0.7464366051768819,
-      "cv_std": 0.0027956743917801515,
-      "train_time_sec": 20.58,
-      "best_params": "default"
+      "macro_f1": 0.8479300098851219,
+      "cv_mean": 0.8479300098851219,
+      "cv_std": 0.0377905402749861,
+      "train_macro_f1": 0.8499834294138315,
+      "grid_candidates": 8,
+      "search_time_sec": 45.6,
+      "best_params": "{'class_weight': None, 'max_features': 0.5, 'min_samples_leaf': 2, 'n_estimators': 200}"
+    },
+    {
+      "model": "KNN",
+      "macro_f1": 0.8478173254744007,
+      "cv_mean": 0.8478173254744007,
+      "cv_std": 0.03781783173186111,
+      "train_macro_f1": 0.8500457660964159,
+      "grid_candidates": 24,
+      "search_time_sec": 796.1,
+      "best_params": "{'n_neighbors': 5, 'p': 1, 'weights': 'distance'}"
     },
     {
       "model": "Decision Tree",
-      "macro_f1": 0.7454857342939373,
-      "weighted_f1": 0.9861517475908135,
-      "balanced_accuracy": 0.9362412867058394,
-      "accuracy": 0.9770640295854681,
-      "cv_mean": 0.7454857342939373,
-      "cv_std": 0.0034382292654936966,
-      "train_time_sec": 12.05,
-      "best_params": "default"
+      "macro_f1": 0.8478123081920866,
+      "cv_mean": 0.8478123081920866,
+      "cv_std": 0.03785467050563299,
+      "train_macro_f1": 0.8500457660964159,
+      "grid_candidates": 64,
+      "search_time_sec": 26.0,
+      "best_params": "{'ccp_alpha': 0.0, 'class_weight': None, 'criterion': 'gini', 'max_depth': 20, 'min_samples_leaf': 1}"
+    },
+    {
+      "model": "SVM (SVC)",
+      "macro_f1": 0.8417052534191598,
+      "cv_mean": 0.8417052534191598,
+      "cv_std": 0.051594603522092025,
+      "train_macro_f1": 0.8492976096003468,
+      "grid_candidates": 16,
+      "search_time_sec": 5.8,
+      "best_params": "{'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}"
     },
     {
       "model": "Gaussian Naive Bayes",
-      "macro_f1": 0.7073904023076885,
-      "weighted_f1": 0.9677038735126784,
-      "balanced_accuracy": 0.9147187185204148,
-      "accuracy": 0.9482902229144734,
-      "cv_mean": 0.7073904023076885,
-      "cv_std": 0.005473047314911557,
-      "train_time_sec": 12.49,
-      "best_params": "default"
+      "macro_f1": 0.7075991485524816,
+      "cv_mean": 0.7075991485524816,
+      "cv_std": 0.005568548641882805,
+      "train_macro_f1": 0.7090042609644893,
+      "grid_candidates": 7,
+      "search_time_sec": 9.6,
+      "best_params": "{'var_smoothing': 1e-05}"
     },
     {
       "model": "Dummy (Zero-R)",
-      "macro_f1": 0.19786092718520737,
-      "weighted_f1": 0.5182904210096118,
-      "balanced_accuracy": 0.25,
-      "accuracy": 0.6548670648752205,
-      "cv_mean": 0.19786092718520737,
-      "cv_std": 1.0580254062933274e-05,
-      "train_time_sec": 11.84,
-      "best_params": "default"
+      "macro_f1": 0.25054235971092187,
+      "cv_mean": 0.25054235971092187,
+      "cv_std": 0.005457164709023129,
+      "train_macro_f1": 0.2522979777956954,
+      "grid_candidates": 3,
+      "search_time_sec": 12.5,
+      "best_params": "{'strategy': 'stratified'}"
     }
   ],
   "test": {
-    "accuracy": 0.9984257477698093,
-    "balanced_accuracy": 0.7716055775174245,
-    "f1_macro": 0.7898770007371495,
-    "f1_weighted": 0.9980627721227328
+    "accuracy": 0.9985,
+    "balanced_accuracy": 0.7716,
+    "f1_macro": 0.79,
+    "f1_weighted": 0.9981,
+    "roc_auc_ovr_macro": 0.9976,
+    "pr_auc_reset_both": 0.1848
   },
-  "cv_model_comparison": [
-    {
-      "model": "KNN",
-      "seconds": 168.5,
-      "f1_macro_mean": 0.8477468083893456,
-      "f1_macro_std": 0.03778163440349529,
-      "f1_weighted_mean": 0.9981397393086777,
-      "f1_weighted_std": 0.00029645909745046534,
-      "balanced_accuracy_mean": 0.8138204147447917,
-      "balanced_accuracy_std": 0.03216492694871557,
-      "accuracy_mean": 0.9983601515335991,
-      "accuracy_std": 0.0002493150926443126
-    },
-    {
-      "model": "Linear SVM",
-      "seconds": 13.83,
-      "f1_macro_mean": 0.8112819465190844,
-      "f1_macro_std": 0.016813273860101167,
-      "f1_weighted_mean": 0.9975579058007137,
-      "f1_weighted_std": 0.00039108708248789437,
-      "balanced_accuracy_mean": 0.8124965668157282,
-      "balanced_accuracy_std": 0.030744493989352226,
-      "accuracy_mean": 0.9975292899739087,
-      "accuracy_std": 0.0007530214609878572
-    },
+  "test_model_comparison": [
     {
       "model": "Random Forest",
-      "seconds": 20.58,
-      "f1_macro_mean": 0.7464366051768819,
-      "f1_macro_std": 0.0027956743917801515,
-      "f1_weighted_mean": 0.986738303671751,
-      "f1_weighted_std": 0.0011524081630606515,
-      "balanced_accuracy_mean": 0.9313791458566169,
-      "balanced_accuracy_std": 0.03157369250474189,
-      "accuracy_mean": 0.9779604959828989,
-      "accuracy_std": 0.0019719050040657303
+      "accuracy": 0.9985,
+      "balanced_accuracy": 0.7716,
+      "f1_macro": 0.79,
+      "f1_weighted": 0.9981,
+      "roc_auc_ovr_macro": 0.9976,
+      "pr_auc_reset_both": 0.1847,
+      "fit_seconds": 1.64,
+      "ms_per_1000_rows": 12.62
+    },
+    {
+      "model": "KNN",
+      "accuracy": 0.9984,
+      "balanced_accuracy": 0.7716,
+      "f1_macro": 0.7899,
+      "f1_weighted": 0.9981,
+      "roc_auc_ovr_macro": 0.9309,
+      "pr_auc_reset_both": 0.1662,
+      "fit_seconds": 0.14,
+      "ms_per_1000_rows": 256.48
     },
     {
       "model": "Decision Tree",
-      "seconds": 12.05,
-      "f1_macro_mean": 0.7454857342939373,
-      "f1_macro_std": 0.0034382292654936966,
-      "f1_weighted_mean": 0.9861517475908135,
-      "f1_weighted_std": 0.0009584698504643711,
-      "balanced_accuracy_mean": 0.9362412867058394,
-      "balanced_accuracy_std": 0.022500904651753893,
-      "accuracy_mean": 0.9770640295854681,
-      "accuracy_std": 0.0016012384564090968
+      "accuracy": 0.9985,
+      "balanced_accuracy": 0.7716,
+      "f1_macro": 0.79,
+      "f1_weighted": 0.9981,
+      "roc_auc_ovr_macro": 0.9976,
+      "pr_auc_reset_both": 0.1848,
+      "fit_seconds": 0.19,
+      "ms_per_1000_rows": 1.78
+    },
+    {
+      "model": "SVM (SVC)",
+      "accuracy": 0.9983,
+      "balanced_accuracy": 0.7715,
+      "f1_macro": 0.7897,
+      "f1_weighted": 0.9979,
+      "roc_auc_ovr_macro": 0.996,
+      "pr_auc_reset_both": 0.1389,
+      "fit_seconds": 0.16,
+      "ms_per_1000_rows": 7.88
     },
     {
       "model": "Gaussian Naive Bayes",
-      "seconds": 12.49,
-      "f1_macro_mean": 0.7073904023076885,
-      "f1_macro_std": 0.005473047314911557,
-      "f1_weighted_mean": 0.9677038735126784,
-      "f1_weighted_std": 0.002513382313281765,
-      "balanced_accuracy_mean": 0.9147187185204148,
-      "balanced_accuracy_std": 0.006471375612588793,
-      "accuracy_mean": 0.9482902229144734,
-      "accuracy_std": 0.0034246633010361657
+      "accuracy": 0.9502,
+      "balanced_accuracy": 0.9177,
+      "f1_macro": 0.7101,
+      "f1_weighted": 0.9689,
+      "roc_auc_ovr_macro": 0.9926,
+      "pr_auc_reset_both": 0.0197,
+      "fit_seconds": 0.16,
+      "ms_per_1000_rows": 2.76
     },
     {
       "model": "Dummy (Zero-R)",
-      "seconds": 11.84,
-      "f1_macro_mean": 0.19786092718520737,
-      "f1_macro_std": 1.0580254062933274e-05,
-      "f1_weighted_mean": 0.5182904210096118,
-      "f1_weighted_std": 7.358100883190018e-05,
-      "balanced_accuracy_mean": 0.25,
-      "balanced_accuracy_std": 0.0,
-      "accuracy_mean": 0.6548670648752205,
-      "accuracy_std": 5.795101251585778e-05
+      "accuracy": 0.4914,
+      "balanced_accuracy": 0.2497,
+      "f1_macro": 0.2496,
+      "f1_weighted": 0.4902,
+      "roc_auc_ovr_macro": 0.504,
+      "pr_auc_reset_both": 0.001,
+      "fit_seconds": 0.09,
+      "ms_per_1000_rows": 1.62
+    }
+  ],
+  "cv_model_comparison": [
+    {
+      "model": "Random Forest",
+      "f1_macro_mean": 0.8479300098851219,
+      "f1_macro_std": 0.0377905402749861,
+      "train_f1_macro_mean": 0.8499834294138315,
+      "n_candidates": 8,
+      "train_rows": 45736,
+      "seconds": 45.6
+    },
+    {
+      "model": "KNN",
+      "f1_macro_mean": 0.8478173254744007,
+      "f1_macro_std": 0.03781783173186111,
+      "train_f1_macro_mean": 0.8500457660964159,
+      "n_candidates": 24,
+      "train_rows": 45736,
+      "seconds": 796.1
+    },
+    {
+      "model": "Decision Tree",
+      "f1_macro_mean": 0.8478123081920866,
+      "f1_macro_std": 0.03785467050563299,
+      "train_f1_macro_mean": 0.8500457660964159,
+      "n_candidates": 64,
+      "train_rows": 45736,
+      "seconds": 26.0
+    },
+    {
+      "model": "SVM (SVC)",
+      "f1_macro_mean": 0.8417052534191598,
+      "f1_macro_std": 0.051594603522092025,
+      "train_f1_macro_mean": 0.8492976096003468,
+      "n_candidates": 16,
+      "train_rows": 12043,
+      "seconds": 5.8
+    },
+    {
+      "model": "Gaussian Naive Bayes",
+      "f1_macro_mean": 0.7075991485524816,
+      "f1_macro_std": 0.005568548641882805,
+      "train_f1_macro_mean": 0.7090042609644893,
+      "n_candidates": 7,
+      "train_rows": 45736,
+      "seconds": 9.6
+    },
+    {
+      "model": "Dummy (Zero-R)",
+      "f1_macro_mean": 0.25054235971092187,
+      "f1_macro_std": 0.005457164709023129,
+      "train_f1_macro_mean": 0.2522979777956954,
+      "n_candidates": 3,
+      "train_rows": 45736,
+      "seconds": 12.5
     }
   ],
   "cv_feature_ablation": [
@@ -257,6 +473,13 @@
       "f1_macro_mean": 0.8478127433528705,
       "f1_macro_std": 0.037771009658527,
       "balanced_accuracy_mean": 0.8138981738491614
+    },
+    {
+      "feature_set": "without_redundant_totals",
+      "n_features": 9,
+      "f1_macro_mean": 0.8477468511040975,
+      "f1_macro_std": 0.03778725128997675,
+      "balanced_accuracy_mean": 0.8138204133514944
     },
     {
       "feature_set": "without_nat",
@@ -271,6 +494,52 @@
       "f1_macro_mean": 0.686796472386618,
       "f1_macro_std": 0.006343515533334529,
       "balanced_accuracy_mean": 0.6764338086217907
+    }
+  ],
+  "feature_importances": [
+    {
+      "feature": "Elapsed Time (sec)",
+      "importance": 0.34289801456372804
+    },
+    {
+      "feature": "Destination Port",
+      "importance": 0.3155657623350996
+    },
+    {
+      "feature": "NAT Destination Port",
+      "importance": 0.04507115952138453
+    },
+    {
+      "feature": "Packets",
+      "importance": 0.0226232399167109
+    },
+    {
+      "feature": "Bytes Sent",
+      "importance": 0.020206930708050953
+    },
+    {
+      "feature": "pkts_received",
+      "importance": 0.00018777529996631958
+    },
+    {
+      "feature": "Source Port",
+      "importance": 0.0
+    },
+    {
+      "feature": "NAT Source Port",
+      "importance": 0.0
+    },
+    {
+      "feature": "Bytes",
+      "importance": 0.0
+    },
+    {
+      "feature": "Bytes Received",
+      "importance": 0.0
+    },
+    {
+      "feature": "pkts_sent",
+      "importance": 0.0
     }
   ]
 }
