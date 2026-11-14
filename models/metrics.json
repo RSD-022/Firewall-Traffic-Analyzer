@@ -216,27 +216,27 @@
       ],
       "matrix": [
         [
-          4890,
-          1048,
-          1538,
-          12
+          4923,
+          1039,
+          1521,
+          5
         ],
         [
-          1048,
-          217,
-          343,
+          1075,
+          220,
+          313,
           0
         ],
         [
-          1512,
-          322,
-          491,
-          2
+          1541,
+          310,
+          476,
+          0
         ],
         [
-          8,
+          4,
           3,
-          0,
+          4,
           0
         ]
       ]
@@ -311,7 +311,7 @@
       "train_macro_f1": 0.8492976096003468,
       "grid_candidates": 16,
       "search_time_sec": 5.8,
-      "best_params": "{'C': 10, 'gamma': 0.1, 'kernel': 'rbf'}"
+      "best_params": "{'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}"
     },
     {
       "model": "Gaussian Naive Bayes",
@@ -321,7 +321,7 @@
       "train_macro_f1": 0.7090042609644893,
       "grid_candidates": 7,
       "search_time_sec": 9.6,
-      "best_params": "{'var_smoothing': np.float64(1e-05)}"
+      "best_params": "{'var_smoothing': 1e-05}"
     },
     {
       "model": "Dummy (Zero-R)",
@@ -351,8 +351,8 @@
       "f1_weighted": 0.9981,
       "roc_auc_ovr_macro": 0.9976,
       "pr_auc_reset_both": 0.1847,
-      "fit_seconds": 1.52,
-      "ms_per_1000_rows": 11.13
+      "fit_seconds": 1.64,
+      "ms_per_1000_rows": 12.62
     },
     {
       "model": "KNN",
@@ -362,8 +362,8 @@
       "f1_weighted": 0.9981,
       "roc_auc_ovr_macro": 0.9309,
       "pr_auc_reset_both": 0.1662,
-      "fit_seconds": 0.15,
-      "ms_per_1000_rows": 242.56
+      "fit_seconds": 0.14,
+      "ms_per_1000_rows": 256.48
     },
     {
       "model": "Decision Tree",
@@ -373,8 +373,8 @@
       "f1_weighted": 0.9981,
       "roc_auc_ovr_macro": 0.9976,
       "pr_auc_reset_both": 0.1848,
-      "fit_seconds": 0.2,
-      "ms_per_1000_rows": 1.59
+      "fit_seconds": 0.19,
+      "ms_per_1000_rows": 1.78
     },
     {
       "model": "SVM (SVC)",
@@ -383,9 +383,9 @@
       "f1_macro": 0.7897,
       "f1_weighted": 0.9979,
       "roc_auc_ovr_macro": 0.996,
-      "pr_auc_reset_both": 0.1393,
-      "fit_seconds": 0.14,
-      "ms_per_1000_rows": 7.98
+      "pr_auc_reset_both": 0.1389,
+      "fit_seconds": 0.16,
+      "ms_per_1000_rows": 7.88
     },
     {
       "model": "Gaussian Naive Bayes",
@@ -395,19 +395,19 @@
       "f1_weighted": 0.9689,
       "roc_auc_ovr_macro": 0.9926,
       "pr_auc_reset_both": 0.0197,
-      "fit_seconds": 0.17,
-      "ms_per_1000_rows": 2.96
+      "fit_seconds": 0.16,
+      "ms_per_1000_rows": 2.76
     },
     {
       "model": "Dummy (Zero-R)",
-      "accuracy": 0.4896,
+      "accuracy": 0.4914,
       "balanced_accuracy": 0.2497,
-      "f1_macro": 0.2498,
-      "f1_weighted": 0.4901,
-      "roc_auc_ovr_macro": 0.4997,
+      "f1_macro": 0.2496,
+      "f1_weighted": 0.4902,
+      "roc_auc_ovr_macro": 0.504,
       "pr_auc_reset_both": 0.001,
       "fit_seconds": 0.09,
-      "ms_per_1000_rows": 1.61
+      "ms_per_1000_rows": 1.62
     }
   ],
   "cv_model_comparison": [
