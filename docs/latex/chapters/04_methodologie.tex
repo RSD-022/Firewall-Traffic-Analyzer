@@ -1,27 +1,144 @@
 \chapter{Experimental Methodology}\label{chap:methodologie}
 
 \section{Introduction}
-\TODO{Chapter introduction}
+Chapter~\ref{chap:donnees} identified four risks in the data: class imbalance, duplicated records, redundant and skewed features, and possible target leakage. This chapter describes how the experiments were designed to control them. It defines the prediction task and the features it may use, the preprocessing pipeline, the way the data are split, and the protocol used to tune and compare the six classifiers. The guiding principle is that every number reported in Chapter~\ref{chap:resultats} must estimate the performance of the model on flows it has \emph{never} seen, with no information from the test set leaking into any decision. The implementation is in \texttt{src/preprocessing.py}, \texttt{src/models.py} and notebooks 02, 05 and 06.
 
-\section{Task Selection and Feature Availability}
-% Retrospective log classification. Table: features available before the decision / after the decision.
-% Justify whether NAT-related features and traffic volume features (Bytes, Packets, Elapsed Time) are used.
-\TODO{Selected task and feature availability table}
+\section{Task Selection and Feature Availability}\label{sec:availability}
+The task is a \textbf{supervised multi-class classification}: given the eleven attributes of a logged flow, predict which of the four actions the firewall applied. The model is a \emph{retrospective} analysis tool (policy auditing, offline triage of logs, decision support), not an inline firewall: it is applied to flows that have already been logged.
 
-\section{Preprocessing}
-% Duplicate handling (decision and justification), log1p transformation, standardization (KNN, SVM),
-% port encoding; everything must be included in a Pipeline fitted on the training data only (no data leakage).
-\TODO{Preprocessing pipeline with a diagram (draw.io) and justification for each step}
+This choice matters because several attributes are only known \emph{after} the firewall has decided. Using a variable that is a consequence of the target is called \emph{target leakage}~\cite{kaufman2012leakage}: it produces excellent scores that cannot be reproduced in a real deployment. Table~\ref{tab:availability} lists when each group of attributes becomes available and the experiment used to measure its influence.
 
-\section{Data Splitting}
-% Grouped splitting: identical feature vectors must remain on the same side. Class counts (training / test),
-% random seed, number of rare-class examples in each split.
-\TODO{Principle, verified counts, and data splitting diagram}
+\begin{table}[htbp]
+  \centering
+  \caption{Availability of the attributes with respect to the firewall's decision}
+  \label{tab:availability}
+  \small
+  \begin{tabular}{|p{3.0cm}|p{3.3cm}|p{3.0cm}|p{4.3cm}|}
+    \hline
+    \textbf{Attributes} & \textbf{When known} & \textbf{Risk} & \textbf{Measured effect (CV macro-F1)} \\
+    \hline
+    Source / Destination Port & When the connection is opened & None, but not sufficient alone & Ports only: 0.687 (full set: 0.848); \emph{reset-both} never found \\
+    \hline
+    NAT Source / Destination Port & Possibly assigned as a consequence of an \emph{allow} decision & Possible leakage ($V = 0.98$ with the action) & Without NAT: 0.848 (difference $-0.0002$) \\
+    \hline
+    Bytes, Packets (totals) & At the end of the flow & Exact redundancy & Without totals: 0.848 (difference $-0.0001$) \\
+    \hline
+    Bytes / packets sent and received & Measured over the flow & Post-decision measurement & Important for the model (Chapter~\ref{chap:resultats}) \\
+    \hline
+    Elapsed Time (sec) & Only when the flow ends & Post-decision measurement & Without elapsed time: 0.846 (difference $-0.0016$) \\
+    \hline
+  \end{tabular}
+\end{table}
 
-\section{Experimental Protocol}
-% Compared models, hyperparameter grids (table), cross-validation (K >= 5), systematic search,
-% evaluation metrics, final test set kept untouched until model selection is complete.
-\TODO{Complete experimental protocol and hyperparameter grid table}
+Because the tool works on completed logs, all eleven attributes are available at prediction time and the \textbf{full feature set is used}. The ablation experiments show that this choice does not hide a leakage problem: removing the \ac{NAT} fields, the totals or the duration changes the cross-validated macro-F1 by less than 0.002. The model therefore does not depend on any single suspicious attribute. Conversely, the ports alone are not enough (macro-F1 0.687), which shows that the traffic measurements carry real information. This analysis is documented in \texttt{docs/md/feature\_availability.md}.
+
+\section{Preprocessing}\label{sec:preprocessing}
+\subsection{Deduplication}
+The 8\,362 exact duplicate records are removed before splitting, which leaves 57\,170 unique records. Keeping them would give the most frequent flows more weight and, more importantly, would let copies of the same flow appear on both sides of a split.
+
+\subsection{Transformation pipeline}
+The remaining transformations are encapsulated in a scikit-learn~\cite{pedregosa2011scikit} \texttt{Pipeline} (Figure~\ref{fig:pipeline}). This is essential: the pipeline is \emph{fitted on the training data only}, so the means, standard deviations and port categories used to transform a validation or test flow are never computed from that flow. The two branches are combined by a \texttt{ColumnTransformer}:
+\begin{itemize}
+  \item \textbf{Numerical branch} (seven volume and duration features): the transformation $\log(1+x)$ reduces the extreme skewness found in Chapter~\ref{chap:donnees}, then \texttt{StandardScaler} centres each feature and scales it to unit variance. Standardisation is required by the distance-based models: without it, \ac{KNN} and \ac{SVM} would be dominated by the features with the largest numerical range. It does not change the tree-based models, which are invariant to monotonic transformations.
+  \item \textbf{Port branch} (four port features): ports are identifiers, so they are \emph{one-hot encoded} (one binary column per port value) instead of being used as numbers. With more than 3\,000 distinct destination ports, one column per value would be impractical; ports that appear fewer than 50 times in the training data are grouped into a single ``infrequent'' column (\texttt{min\_frequency=50}), and ports never seen during training are mapped to that column at prediction time (\texttt{handle\_unknown="infrequent\_if\_exist"}).
+\end{itemize}
+The result is a vector of \textbf{80 features}: 7 numerical and 73 binary port columns.
+
+\begin{figure}[htbp]
+  \centering
+  \resizebox{\linewidth}{!}{%
+  \begin{tikzpicture}[
+      box/.style={draw, rounded corners, align=center, minimum height=0.9cm, font=\small, fill=gray!8},
+      arr/.style={-{Latex[length=2mm]}, thick}]
+    \node[box, minimum width=2.7cm] (in) {Logged flow\\11 attributes};
+    \node[box, right=1.3cm of in, yshift=1.0cm, minimum width=3.4cm] (num) {7 volume / duration\\$\log(1+x)$ $\rightarrow$ standardise};
+    \node[box, right=1.3cm of in, yshift=-1.0cm, minimum width=3.4cm] (port) {4 ports\\one-hot, rare $\rightarrow$ ``infrequent''};
+    \node[box, right=1.2cm of num, yshift=-1.0cm, minimum width=2.2cm] (cat) {80 features};
+    \node[box, right=1.0cm of cat, minimum width=2.2cm, fill=blue!8] (clf) {Classifier};
+    \node[box, right=1.0cm of clf, minimum width=1.6cm] (out) {Action};
+    \draw[arr] (in.east) -- ++(0.6,0) |- (num.west);
+    \draw[arr] (in.east) -- ++(0.6,0) |- (port.west);
+    \draw[arr] (num.east) -| ([xshift=-0.4cm]cat.west) -- (cat.west);
+    \draw[arr] (port.east) -| ([xshift=-0.4cm]cat.west) -- (cat.west);
+    \draw[arr] (cat) -- (clf);
+    \draw[arr] (clf) -- (out);
+    \draw[dashed, gray] ([xshift=-0.3cm, yshift=0.25cm]num.north west) rectangle ([xshift=0.2cm, yshift=-0.3cm]clf.south east |- port.south);
+    \node[font=\footnotesize, gray, anchor=south west] at ([xshift=-0.3cm, yshift=0.3cm]num.north west) {scikit-learn Pipeline, fitted on training data only};
+  \end{tikzpicture}}
+  \caption{Preprocessing and classification pipeline}
+  \label{fig:pipeline}
+\end{figure}
+
+\section{Data Splitting}\label{sec:split}
+\subsection{Group-aware stratified split}
+Even after deduplication, several unique records share the same eleven attribute values and differ only by their label (the conflicting records of Chapter~\ref{chap:donnees}). More generally, the guarantee required is that \textbf{no feature vector present in the test set was seen during training}. A purely random split cannot ensure this. The split therefore uses \texttt{StratifiedGroupKFold}: each distinct feature vector defines a \emph{group}, all records of a group are assigned to the same side, and the class proportions are kept approximately equal on both sides (stratification). The data are divided into five such folds (random seed 42); one fold containing all four classes is kept as the test set (20\,\%) and the four others form the training set (80\,\%), as summarised in Table~\ref{tab:split}. The absence of overlap between training and test groups is checked by an assertion in notebook 02.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Composition of the training and test sets}
+  \label{tab:split}
+  \begin{tabular}{|l|r|r|r|}
+    \hline
+    \textbf{Action} & \textbf{Training} & \textbf{Test} & \textbf{Total} \\
+    \hline
+    allow & 29\,951 & 7\,488 & 37\,439 \\
+    deny & 6\,434 & 1\,608 & 8\,042 \\
+    drop & 9\,308 & 2\,327 & 11\,635 \\
+    reset-both & 43 & 11 & 54 \\
+    \hline
+    \textbf{Total} & \textbf{45\,736} & \textbf{11\,434} & \textbf{57\,170} \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{The test set is used once}
+The test set is set aside immediately and is used only once, after every model has been tuned and the final model has been chosen. All the decisions of the project (preprocessing choices, hyperparameters, model selection) are made by cross-validation on the training set only. This guarantees that the test scores are an unbiased estimate of performance on new flows.
+
+\section{Experimental Protocol}\label{sec:protocol}
+\subsection{Compared models}
+The six classifiers required by the course are compared, all inside the same pipeline: the Zero-R baseline (\texttt{DummyClassifier}), \ac{KNN}~\cite{cover1967nearest}, a decision tree~\cite{breiman1984classification}, a random forest~\cite{breiman2001random}, Gaussian naive Bayes and a support vector machine~\cite{cortes1995support}. Their principles are presented in Chapter~\ref{chap:fondements}. Zero-R serves as a reference: a useful model must clearly beat it.
+
+\subsection{Cross-validation}
+Inside the training set, every evaluation uses a 5-fold \texttt{StratifiedGroupKFold} built on the same principle as the train/test split: identical feature vectors never appear in both the training and the validation part of a fold. A check in notebook 03 confirms that 0\,\% of the validation records of each fold have an identical vector in the corresponding training part (\texttt{reports/feature\_overlap\_audit.csv}). With an ordinary K-fold split, duplicated vectors would make validation scores optimistic.
+
+\subsection{Hyperparameter optimisation}
+\textbf{Every model with tunable hyperparameters} is optimised with \texttt{GridSearchCV}, which evaluates every combination of a grid by 5-fold cross-validation and keeps the best one. The grids are given in Table~\ref{tab:grids}; they were chosen to explore the hyperparameters that control the bias--variance trade-off of each model, with ranges wide enough for the optimum to lie inside the grid rather than on its edge. In total, 122 combinations and 610 model fits were evaluated (\texttt{notebooks/05\_full\_tuning\_benchmark.ipynb}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Hyperparameter grids explored with GridSearchCV (5 folds)}
+  \label{tab:grids}
+  \small
+  \begin{tabular}{|l|p{8.0cm}|r|}
+    \hline
+    \textbf{Model} & \textbf{Hyperparameters and values} & \textbf{Combinations} \\
+    \hline
+    Zero-R & strategy $\in$ \{most frequent, prior, stratified\} & 3 \\
+    \hline
+    \ac{KNN} & $k \in \{5, 11, 21, 31, 41, 51\}$; weights $\in$ \{uniform, distance\}; distance $\in$ \{Manhattan ($p=1$), Euclidean ($p=2$)\} & 24 \\
+    \hline
+    Decision tree & criterion $\in$ \{Gini, entropy\}; max depth $\in \{10, 20, 30, \text{none}\}$; min samples per leaf $\in \{1, 5\}$; pruning $\alpha \in \{0, 10^{-4}\}$; class weight $\in$ \{none, balanced\} & 64 \\
+    \hline
+    Random forest & 200 trees; max features $\in$ \{$\sqrt{d}$, 50\,\%\}; min samples per leaf $\in \{1, 2\}$; class weight $\in$ \{none, balanced per bootstrap\} & 8 \\
+    \hline
+    Gaussian naive Bayes & variance smoothing $\in \{10^{-11}, 10^{-10}, \dots, 10^{-5}\}$ & 7 \\
+    \hline
+    \ac{SVM} & linear kernel: $C \in \{0.1, 1, 10\}$; RBF kernel: $C \in \{1, 10, 100\}$, $\gamma \in$ \{scale, 0.01, 0.1\}; polynomial kernel: $C \in \{1, 10\}$, degree $\in \{2, 3\}$ & 16 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+The \ac{SVM} with non-linear kernels has a training cost that grows roughly with the square of the number of records. Its grid search was therefore run on a stratified sample of the training set of 12\,043 records (at most 4\,000 per class and all 43 \emph{reset-both} records), with the same grouped folds. This limitation is taken into account when interpreting its results.
+
+\subsection{Evaluation metrics and selection rule}
+Because of the imbalance, the \textbf{selection metric is the macro-averaged F1-score}, the unweighted mean of the F1-scores of the four classes: \emph{reset-both} counts as much as \emph{allow}, so a model that ignores the rare class is penalised. The following metrics are also reported: accuracy, balanced accuracy (mean recall over the classes), weighted F1-score, the area under the \ac{ROC} curve in one-vs-rest mode (\ac{AUC}), the average precision of the \emph{reset-both} class, the prediction time, and the per-class confusion matrices. Their definitions are given in Chapter~\ref{chap:fondements}.
+
+The final model is chosen with a rule fixed \emph{before} looking at the test set:
+\begin{enumerate}
+  \item keep the models whose cross-validated macro-F1 is not significantly different from the best one, using the Friedman test~\cite{friedman1937use} on the paired fold scores;
+  \item among them, keep the simplest and fastest model, since an interpretable model with a low prediction cost is preferable for a log-analysis tool.
+\end{enumerate}
+The selected model is then refitted on the whole training set and evaluated once on the test set, where a McNemar test~\cite{mcnemar1947note} compares it with the best alternative.
 
 \section{Conclusion}
-\TODO{Chapter conclusion and transition to Chapter~\ref{chap:resultats}}
+The methodology turns the risks found in the data into explicit safeguards: duplicates are removed and identical feature vectors are grouped on one side of every split; skewed features are log-transformed and standardised inside a pipeline fitted on training data only; possible leakage is measured by ablation; the imbalance is handled by a macro-averaged metric; and the test set is used only once. With this protocol, the six classifiers can be compared fairly. Chapter~\ref{chap:resultats} presents the results.
