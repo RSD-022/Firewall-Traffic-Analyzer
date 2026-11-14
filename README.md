@@ -80,6 +80,7 @@ The dataset, the trained pipeline (`models/firewall_pipeline.joblib`) and its me
 | `04_ml_improvement_experiments` | Rare-class experiments (class weights, thresholds, importance) | `reports/*.csv` |
 | `05_full_tuning_benchmark` | GridSearchCV on all six models, ROC/PR curves, significance tests (≈ 20–30 min) | `reports/tuning/`, `docs/latex/figures/ch05/` |
 | `06_final_model_export` | Final model selection and export for the application | `models/`, decision-tree rules |
+| `07_statistical_tests` | Assumption checks, Kruskal–Wallis on all features, Dunn post-hoc, χ², Spearman | `reports/*tests*.csv`, `docs/latex/figures/ch03/` |
 
 Detailed usage of each application page: [README_APP_SETUP_USAGE.md](README_APP_SETUP_USAGE.md).
 
@@ -100,7 +101,7 @@ Members are identified by their student codes only.
 
 | Deliverable | RSD-022 | RSD-020 | RSD-009 | RSD-002 |
 |---|:-:|:-:|:-:|:-:|
-| Data cleaning and EDA (`notebooks/01`, `src/statistical_tests.py`) | ● | ○ | ○ | |
+| Data cleaning, EDA and statistical tests (`notebooks/01`, `07`, `src/statistical_tests.py`) | ● | ○ | ○ | |
 | Preprocessing and split (`notebooks/02`, `src/preprocessing.py`) | ● | ○ | | |
 | Model benchmark and ablations (`notebooks/03`, `04`, `src/models.py`) | ○ | ● | | |
 | Full tuning and final model (`notebooks/05`, `06`, `models/`) | ● | | | |
@@ -138,12 +139,17 @@ CV = mean ± standard deviation of macro-F1 over the 5 folds; test = held-out se
 
 ### Statistical tests
 
-| Test | Question | Why this test | Result |
-|---|---|---|---|
-| Kruskal–Wallis + ε² | Do byte volumes differ between actions? | 4 independent groups, strongly non-normal and heavy-tailed data, so the non-parametric alternative to ANOVA is used | H = 44,288, p < 0.001, ε² = 0.68 (large effect); on deduplicated data H = 34,771 |
-| χ² of independence + Cramér's V | Is the NAT source-port status related to the action? | Two categorical variables; every expected count ≥ 5 (minimum 23.4) | χ² = 63,183, df = 3, p < 0.001, V = 0.98 (very strong association) |
-| Friedman | Do the three best models differ in CV macro-F1? | Non-parametric test for k ≥ 3 models evaluated on the same folds | χ² = 0.93, p = 0.63 → **no significant difference** |
-| McNemar (exact) | Do Random Forest and Decision Tree make different errors on the test set? | Standard paired test for two classifiers on one test set | 0 discordant flows, p = 1 → identical predictions |
+Main analysis on the 57,170 unique flows (duplicates would violate the independence assumption); results on the original data are given as a sensitivity check in `notebooks/07_statistical_tests.ipynb`. With n ≈ 57,000 almost every test is significant, so conclusions rest on **effect sizes**.
+
+| # | Test | Question | Why this test | Result |
+|---|---|---|---|---|
+| 1 | Shapiro–Wilk, Brown–Forsythe | Are the ANOVA assumptions (normality, equal variances) met? | Must be checked before choosing between ANOVA and a rank-based test | Normality rejected in all four actions even after log1p (largest p = 2.1e-6); variances differ (W = 6,217, p < 1e-300) → **ANOVA is not valid, non-parametric tests are used** |
+| 2 | Kruskal–Wallis + ε², BH correction | Does each numeric feature differ between actions? | Non-parametric alternative to ANOVA for 4 independent groups; 7 features tested, so false-discovery-rate correction | All 7 features differ (p < 1e-300). Largest effects: Elapsed Time ε² = 0.70, Packets 0.66, Bytes 0.61 |
+| 3 | Dunn post-hoc (Holm) + Cliff's δ | Which pairs of actions differ? | Kruskal–Wallis only says that *some* group differs; Dunn uses the same ranks, δ measures each difference | Every pair with `allow` differs strongly (\|δ\| ≥ 0.7). Elapsed Time does **not** separate deny / drop / reset-both (δ ≈ 0, p = 1). deny vs reset-both differ on Bytes (δ = −0.50, p = 5e-7) but on only 54 flows |
+| 4 | χ² of independence + Cramér's V | Are NAT source-port status and destination port associated with the action? | Two categorical variables; Cochran's rule checked; Monte Carlo p-value (999 permutations) when expected counts < 5 | NAT status: χ² = 55,264, df = 3, V = 0.98. Destination port (top 10 + other): χ² = 88,899, df = 30, V = 0.72, Monte Carlo p = 0.001 |
+| 5 | Spearman ρ, BH correction | Which numeric features are redundant? | Skewed, non-normal data → rank correlation instead of Pearson | Volume features are almost collinear (Bytes Received–pkts_received ρ = 0.98, Bytes–Bytes Sent 0.95), which explains their near-zero permutation importance |
+| 6 | Friedman | Do the three best models differ in CV macro-F1? | Non-parametric test for k ≥ 3 models evaluated on the same folds | χ² = 0.93, p = 0.63 → **no significant difference** |
+| 7 | McNemar (exact) | Do Random Forest and Decision Tree make different errors on the test set? | Standard paired test for two classifiers on one test set | 0 discordant flows, p = 1 → identical predictions |
 
 ### Interpretation and final choice
 
@@ -169,7 +175,7 @@ CV = mean ± standard deviation of macro-F1 over the 5 folds; test = held-out se
 │   ├── firewall_pipeline.joblib        Fitted preprocessing + classifier pipeline
 │   ├── metadata.json                   Selected model, features, hyperparameters
 │   └── metrics.json                    Test and cross-validation results shown in the app
-├── notebooks/                          01 → 06 (see section 2)
+├── notebooks/                          01 → 07 (see section 2)
 ├── reports/                            CSV outputs; reports/tuning/ = grid searches and final comparison
 ├── src/
 │   ├── app.py                          Streamlit application entry point
