@@ -1,0 +1,9 @@
+test,statistic,p_value,effect_size,conclusion
+"Shapiro–Wilk on log1p(Bytes), each action",see table,2.0771e-06,-,normality rejected in all four groups
+"Brown–Forsythe (Levene, median)",6216.6,< 1e-300 (numerical underflow),-,variances differ between actions
+"Kruskal–Wallis, Bytes by action",34771.0,< 1e-300 (numerical underflow),ε² = 0.608,distributions differ
+"Kruskal–Wallis, Elapsed Time (sec) by action",40093.0,< 1e-300 (numerical underflow),ε² = 0.701,distributions differ
+"Dunn post-hoc (Holm), deny vs reset-both, Bytes",-5.15,5.1986e-07,δ = -0.504,see interpretation
+"χ², NAT source-port status × action",55264.0,< 1e-300 (numerical underflow),V = 0.983,strong association
+"χ², destination port (top 10) × action",88899.0,0.0010,V = 0.720,strong association
+"Spearman, Bytes Received vs pkts_received",0.976,< 1e-300 (numerical underflow),ρ = +0.976,strong monotonic relation

@@ -1,0 +1,22 @@
+feature 1,feature 2,rho,p,p BH
+Bytes Received,pkts_received,0.9755780681084223,0.0,0.0
+Packets,pkts_received,0.9675220711500422,0.0,0.0
+Bytes,Bytes Sent,0.9536481074737447,0.0,0.0
+Bytes,Bytes Received,0.9522500230246665,0.0,0.0
+Bytes Received,Packets,0.9400034434603526,0.0,0.0
+Bytes,pkts_received,0.9366135345898807,0.0,0.0
+Bytes,Packets,0.9343341701409289,0.0,0.0
+Bytes Sent,Packets,0.8838064217301925,0.0,0.0
+Bytes Sent,pkts_received,0.8735974143037496,0.0,0.0
+Packets,pkts_sent,0.8732151467355359,0.0,0.0
+Bytes Sent,Bytes Received,0.8631477186453905,0.0,0.0
+pkts_sent,pkts_received,0.8063177185282489,0.0,0.0
+Packets,Elapsed Time (sec),0.798855190050629,0.0,0.0
+Bytes Received,Elapsed Time (sec),0.7940631700593532,0.0,0.0
+Elapsed Time (sec),pkts_received,0.7930615301999023,0.0,0.0
+Bytes,Elapsed Time (sec),0.7862772579076811,0.0,0.0
+Bytes,pkts_sent,0.78434852547601,0.0,0.0
+Bytes Sent,pkts_sent,0.7828397800345065,0.0,0.0
+Bytes Received,pkts_sent,0.764277182558608,0.0,0.0
+Bytes Sent,Elapsed Time (sec),0.7283547229190271,0.0,0.0
+Elapsed Time (sec),pkts_sent,0.5529485843216282,0.0,0.0
