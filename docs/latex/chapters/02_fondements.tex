@@ -1,51 +1,639 @@
-\chapter{Theoretical Foundations}\label{chap:fondements}
+
+\chapter{Theoretical Foundations}
+\label{chap:fondements}
 
 \section{Introduction}
-\TODO{Chapter introduction}
+
+The development of a reliable classification system requires an understanding of the theoretical concepts and algorithms underlying the Data Mining process. This chapter introduces the main principles of Knowledge Discovery in Databases (KDD), followed by the supervised classification techniques selected for this project. Particular attention is given to the mathematical foundations, operating principles, and principal hyperparameters of each algorithm, as well as their respective advantages and limitations. The chapter also establishes the theoretical basis for the evaluation procedures and statistical methods used in the experimental study. These foundations provide the necessary background for understanding the dataset exploration, experimental methodology, and results presented in the subsequent chapters.
 
 \section{Data Mining Process}
-% KDD / CRISP-DM process: selection, preprocessing, transformation, data mining, interpretation.
-% Show where each stage of the project fits (a draw.io diagram is possible).
-\TODO{Process overview and its connection to the following chapters}
+
+Data Mining is the process of identifying meaningful patterns, relationships, and knowledge from large collections of data. It constitutes an essential stage of Knowledge Discovery in Databases (KDD), a broader process that transforms raw data into useful and interpretable knowledge \cite{fayyad1996data}. The KDD process is generally organized into several interconnected stages: data selection, preprocessing, transformation, Data Mining, and interpretation or evaluation. Although these stages are commonly presented sequentially, the process is iterative, since the findings obtained during analysis may require adjustments to earlier decisions.
+
+The first stage, \textbf{data selection}, consists of identifying and collecting the data relevant to the problem being investigated. It defines the observations and attributes that will be used throughout the analysis. In the context of this project, this stage corresponds to selecting the Internet Firewall Data dataset from the UCI Machine Learning Repository and identifying the eleven traffic attributes and the \texttt{Action} target variable.
+
+The second stage, \textbf{data preprocessing}, aims to improve data quality by identifying and addressing inconsistencies, redundant observations, missing values, and other potential problems. This stage is particularly important because the quality and reliability of the resulting models depend on the data used during training. In this project, it involves examining duplicate records, investigating conflicting labels, and assessing the presence of outliers and other data quality issues.
+
+The third stage, \textbf{data transformation}, prepares the selected attributes for the algorithms to be applied. Depending on their nature, features may require encoding, normalization, standardization, or mathematical transformations. For the firewall dataset, port identifiers are represented using categorical encoding, while numerical traffic measurements undergo a logarithmic transformation followed by standardization. These operations produce a representation suitable for the selected classification algorithms.
+
+The fourth stage, \textbf{Data Mining}, consists of applying analytical or Machine Learning algorithms to extract patterns and construct predictive models. Depending on the objective, this stage may involve classification, regression, clustering, or association analysis. Since the objective of the present project is to predict one of four known firewall actions, supervised multiclass classification is selected. Several algorithms are trained and compared to investigate their ability to learn relationships between traffic characteristics and recorded firewall decisions.
+
+Finally, the \textbf{interpretation and evaluation} stage examines the quality, relevance, and usefulness of the discovered knowledge. Predictive models are assessed using appropriate performance metrics, while statistical analyses and feature importance techniques help interpret the relationships identified in the data. The results are then used to draw conclusions about model performance and the limitations of the proposed approach.
+
+The relationship between these stages and the organization of this report is summarized as follows:
+
+\begin{itemize}
+    \item \textbf{Chapter~\ref{chap:donnees}:} describes the selected dataset, its attributes, and the exploratory analysis and data quality assessment.
+    \item \textbf{Chapter~\ref{chap:methodologie}:} presents the preprocessing operations, data splitting strategy, classification experiments, and model optimization procedures.
+    \item \textbf{Chapter~\ref{chap:resultats}:} evaluates and interprets the classification results, statistical findings, and feature relevance analyses.
+    \item \textbf{Chapter~\ref{chap:application}:} presents the practical integration of the selected predictive pipeline into an interactive application.
+\end{itemize}
+
+This organization follows the general principles of the KDD process while adapting them to the specific requirements of historical firewall traffic classification. It also emphasizes that model development is not an isolated operation: reliable predictions require a complete workflow covering data understanding, preparation, learning, evaluation, and practical interpretation.
 
 \section{Supervised Classification and Selected Models}
-% For EACH model: principle, key hyperparameters, strengths and limitations, and why it was selected for this project.
-% Use LaTeX formulas; include only those relevant to the experiments.
+
+Supervised learning is a Machine Learning paradigm in which an algorithm learns a relationship between input variables and known output labels from a collection of labelled observations. The objective is to construct a model capable of predicting the output associated with new observations that were not used during training.
+
+Classification is a supervised learning task in which the target variable represents a finite set of discrete categories. In contrast to regression, which predicts continuous numerical values, classification assigns each observation to one of the predefined classes. Depending on the number of possible categories, classification problems can be binary or multiclass.
+
+In this project, the task is formulated as a four-class classification problem. Each observation is represented by eleven input attributes describing a network flow, while the target variable corresponds to one of the four firewall actions: \texttt{allow}, \texttt{deny}, \texttt{drop}, or \texttt{reset-both}. The objective is to learn a function that maps the input feature space to the corresponding action category.
+
+Several supervised classification algorithms are investigated to compare their learning mechanisms, predictive capabilities, and limitations. A simple baseline classifier is first introduced to establish a reference performance. It is followed by instance-based and tree-based learning methods, together with probabilistic and margin-based classifiers presented in the subsequent sections.
+
 \subsection{Baseline Classifier (Zero-R)}
-\TODO{Principle and role as a lower-bound baseline}
+
+A baseline classifier is a simple predictive model used as a reference against which more sophisticated algorithms can be evaluated. Its purpose is not to discover complex relationships within the data, but to establish a minimum level of performance that a useful classification model should improve upon.
+
+The Zero-R classifier is one of the simplest classification approaches. It ignores all input attributes and predicts the most frequent class observed in the training data. For a dataset containing $N$ observations and $C$ possible classes, the predicted class is determined by:
+
+\begin{equation}
+    \hat{y}_{\text{Zero-R}}
+    =
+    \underset{c \in \mathcal{Y}}{\arg\max}
+    \sum_{i=1}^{N}\mathbb{1}(y_i=c)
+    \label{eq:zero-r}
+\end{equation}
+
+where $\mathcal{Y}$ denotes the set of possible classes, $y_i$ represents the actual class of observation $i$, and $\mathbb{1}(\cdot)$ is an indicator function that returns one when its condition is true and zero otherwise.
+
+Consequently, every observation receives the same predicted label, regardless of its characteristics. This makes Zero-R computationally inexpensive and easy to interpret. However, it does not learn relationships between input features and target classes, and its predictions are strongly influenced by the distribution of the target variable.
+
+In this project, Zero-R is implemented using the \texttt{DummyClassifier} from the Scikit-learn library \cite{pedregosa2011scikit}. It serves as a reference for determining whether the investigated Machine Learning algorithms provide predictive information beyond simply reproducing the dominant class. Given the strong imbalance in the firewall dataset, this comparison is particularly important: a classifier that predicts only the majority action may achieve seemingly acceptable accuracy while completely failing to identify less frequent actions.
+
+The baseline is also useful for evaluating the effectiveness of the proposed models using class-sensitive metrics, particularly macro-averaged F1-score. A model that does not meaningfully improve upon the baseline cannot be considered a useful solution to the classification problem, regardless of its apparent simplicity or computational efficiency.
 
 \subsection{K-Nearest Neighbors}
-\TODO{Distance, choice of K, standardization, weighting}
+
+K-Nearest Neighbors (KNN) is a supervised, instance-based classification algorithm that assigns a class to a new observation according to the labels of its nearest training observations. Unlike models that explicitly learn a set of parameters describing a decision function, KNN relies on the training instances themselves and determines predictions by calculating distances in the feature space \cite{cover1967nearest}.
+
+The fundamental principle of KNN is that observations with similar characteristics are likely to belong to the same class. Given a query observation $x$, the algorithm calculates its distance from the training observations, identifies the $K$ closest neighbors, and determines the predicted class from their labels.
+
+For numerical feature vectors, the Euclidean distance between two observations $x_i$ and $x_j$ is defined as:
+
+\begin{equation}
+    d(x_i,x_j)
+    =
+    \sqrt{
+    \sum_{m=1}^{d}
+    (x_{im}-x_{jm})^2
+    }
+    \label{eq:euclidean-distance}
+\end{equation}
+
+where $d$ represents the number of features, and $x_{im}$ denotes the value of feature $m$ for observation $i$.
+
+Another commonly used distance measure is the Manhattan distance, defined as:
+
+\begin{equation}
+    d(x_i,x_j)
+    =
+    \sum_{m=1}^{d}
+    |x_{im}-x_{jm}|
+    \label{eq:manhattan-distance}
+\end{equation}
+
+The choice of distance metric influences the neighborhood structure and therefore the resulting classification. Euclidean distance emphasizes squared differences between feature values, whereas Manhattan distance measures the sum of absolute differences.
+
+Once the $K$ nearest neighbors have been identified, the predicted class can be determined through majority voting:
+
+\begin{equation}
+    \hat{y}
+    =
+    \underset{c \in \mathcal{Y}}{\arg\max}
+    \sum_{i \in \mathcal{N}_K(x)}
+    \mathbb{1}(y_i=c)
+    \label{eq:knn-uniform}
+\end{equation}
+
+where $\mathcal{N}_K(x)$ denotes the set of the $K$ nearest training observations to the query point $x$.
+
+KNN also supports distance-weighted voting, in which closer neighbors contribute more strongly to the prediction. The corresponding class score can be expressed as:
+
+\begin{equation}
+    S(c \mid x)
+    =
+    \sum_{i \in \mathcal{N}_K(x)}
+    w_i \mathbb{1}(y_i=c)
+    \label{eq:knn-weighted}
+\end{equation}
+
+where $w_i$ represents the weight assigned to neighbor $i$. In distance-weighted classification, this weight is inversely related to the distance between the query observation and the neighbor. This allows nearby observations to exert greater influence than more distant ones.
+
+The choice of $K$ is an important hyperparameter because it controls the size of the neighborhood considered during classification. A small value of $K$ makes the model more sensitive to local variations and noise, potentially leading to overfitting. Conversely, a large value produces smoother decision boundaries but may overlook local patterns and introduce underfitting. Therefore, the optimal value depends on the dataset and must be determined experimentally.
+
+Feature scaling is particularly important for KNN because its predictions depend directly on distance calculations. Features with large numerical ranges can dominate the distance computation, even when they are not necessarily more informative. Standardization addresses this issue by transforming numerical features to have approximately zero mean and unit variance:
+
+\begin{equation}
+    z = \frac{x-\mu}{\sigma}
+    \label{eq:standardization}
+\end{equation}
+
+where $x$ is the original feature value, $\mu$ is the training-set mean, and $\sigma$ is the training-set standard deviation.
+
+In this project, the seven numerical traffic measurements first undergo a $\log(1+x)$ transformation to reduce skewness, followed by standardization. The four port attributes are treated as categorical identifiers and transformed using one-hot encoding. This produces a feature representation containing 80 columns, combining seven standardized numerical features and 73 binary categorical features. These transformations are fitted using training data only to avoid information leakage during evaluation.
+
+The KNN model is selected because it provides a straightforward, non-parametric approach to classification and can capture local relationships between traffic observations without assuming a predefined functional form. Its main limitations include computationally expensive prediction when the training dataset is large, sensitivity to feature representation and scaling, and potential degradation in high-dimensional spaces.
+
+For the experimental comparison, the number of neighbors is evaluated over the values $K \in \{5,11,21,31,41,51\}$. Both uniform and distance-based voting are considered, together with Euclidean and Manhattan distance metrics. These alternatives allow the influence of neighborhood size, distance definition, and voting strategy to be evaluated systematically through cross-validation.
 
 \subsection{Decision Tree and Random Forest}
-\TODO{Gini index, entropy, pruning, bagging, feature importance}
+
+Decision Trees and Random Forests are supervised learning methods based on recursive partitioning of the feature space. Both algorithms can be used for classification, but they differ in how they construct their predictive models. A Decision Tree produces predictions through a sequence of hierarchical decisions, whereas a Random Forest combines multiple trees to obtain a more stable ensemble prediction.
+
+\textbf{Decision Tree}
+
+A Decision Tree is a classification algorithm that organizes decision rules into a tree structure. Each internal node represents a test on an input feature, each branch corresponds to an outcome of that test, and each leaf node represents a predicted class. The algorithm recursively divides the training observations into smaller subsets in order to create groups that are increasingly homogeneous with respect to their target labels \cite{breiman1984classification}.
+
+The quality of a split is measured using an impurity criterion. Two commonly used criteria are the Gini impurity and entropy.
+
+The Gini impurity measures the probability of incorrectly classifying an observation if its class is assigned randomly according to the class distribution of the node. It is defined as:
+
+\begin{equation}
+    G(t)
+    =
+    1-\sum_{c=1}^{C}p(c\mid t)^2
+    \label{eq:gini-impurity}
+\end{equation}
+
+where $t$ represents a tree node, $C$ is the number of target classes, and $p(c\mid t)$ denotes the proportion of observations belonging to class $c$ within that node.
+
+Entropy measures the uncertainty associated with the class distribution of a node. It is expressed as:
+
+\begin{equation}
+    H(t)
+    =
+    -\sum_{c=1}^{C}
+    p(c\mid t)\log_2 p(c\mid t)
+    \label{eq:entropy}
+\end{equation}
+
+A node containing observations from a single class has zero impurity, whereas a node containing an evenly distributed mixture of classes has greater impurity.
+
+To select a split, the algorithm evaluates the reduction in impurity resulting from dividing a parent node into child nodes. For a candidate split $s$, the impurity reduction is:
+
+\begin{equation}
+    \Delta I(s,t)
+    =
+    I(t)
+    -
+    \sum_{j=1}^{J}
+    \frac{N_j}{N_t}I(t_j)
+    \label{eq:impurity-reduction}
+\end{equation}
+
+where $I(t)$ represents the impurity of the parent node, $J$ is the number of resulting child nodes, $N_t$ is the number of observations in the parent node, and $N_j$ and $I(t_j)$ denote the number of observations and impurity of child node $j$, respectively.
+
+The algorithm selects the split that produces the greatest impurity reduction, subject to the constraints imposed by its hyperparameters. This process continues recursively until a stopping condition is reached.
+
+Although Decision Trees are easy to interpret and can capture nonlinear relationships and interactions between features, unrestricted tree growth can lead to overfitting. A tree may become excessively complex and learn patterns specific to the training data rather than generalizable relationships.
+
+Pruning addresses this problem by limiting the complexity of the resulting tree. Pre-pruning techniques restrict tree growth through parameters such as maximum depth and minimum samples per leaf. Cost-complexity pruning provides an additional mechanism for controlling tree size by balancing predictive fit against the complexity of the tree. Its objective can be expressed as:
+
+\begin{equation}
+    R_{\alpha}(T)
+    =
+    R(T)+\alpha |T|
+    \label{eq:cost-complexity}
+\end{equation}
+
+where $T$ represents the tree, $R(T)$ denotes its empirical classification error or impurity-based risk, $|T|$ is the number of terminal nodes, and $\alpha$ controls the penalty associated with tree complexity.
+
+In this project, Decision Trees are investigated because they provide an interpretable classification approach and can identify nonlinear relationships between network traffic characteristics and firewall actions. The experiments compare Gini impurity and entropy, different maximum depths, minimum samples per leaf, cost-complexity pruning values, and class-weighting strategies.
+
+\textbf{Random Forest}
+
+Random Forest is an ensemble learning algorithm that combines multiple Decision Trees to improve predictive stability and reduce the risk of overfitting. It was introduced by Breiman as a method that combines randomized tree predictors to produce a more robust classification model \cite{breiman2001random}.
+
+The algorithm relies on two main sources of randomness. First, each tree is trained using a bootstrap sample drawn from the original training dataset. This sampling process allows individual trees to learn from different subsets of observations. Second, at each split, only a randomly selected subset of features is considered. This reduces the correlation between trees and encourages diversity within the ensemble.
+
+For classification, each tree produces a predicted class, and the Random Forest combines these predictions through majority voting:
+
+\begin{equation}
+    \hat{y}
+    =
+    \underset{c \in \mathcal{Y}}{\arg\max}
+    \sum_{b=1}^{B}
+    \mathbb{1}(T_b(x)=c)
+    \label{eq:random-forest-voting}
+\end{equation}
+
+where $B$ represents the number of trees, $T_b(x)$ is the prediction produced by tree $b$ for observation $x$, and $\mathbb{1}(\cdot)$ is an indicator function.
+
+The use of multiple independently randomized trees generally produces a more stable decision boundary than relying on a single tree. This is particularly useful when individual trees are sensitive to variations in the training data.
+
+Random Forest also provides feature importance estimates that can help identify which input attributes contribute most to the model's predictions. One common approach is impurity-based importance, which aggregates the reduction in impurity attributed to a feature across all trees in the ensemble. However, such importance estimates should be interpreted cautiously because they can be influenced by the structure and representation of the features. Permutation-based importance provides an alternative by measuring the decrease in predictive performance after randomly shuffling a feature, thereby breaking its association with the target variable.
+
+The principal advantages of Random Forest include its ability to model complex nonlinear relationships, its reduced sensitivity to individual training observations, and its capacity to capture interactions between features. Its limitations include higher computational and memory requirements than a single Decision Tree and reduced interpretability due to the combination of many individual trees.
+
+In this project, Random Forest is included to evaluate the benefits of ensemble learning for multiclass firewall action classification. The experimental configuration uses 200 trees and investigates the number of features considered at each split, minimum samples per leaf, and class-weighting strategies. The resulting model also provides feature importance information that contributes to the interpretation of the classification results.
+
+Overall, Decision Trees and Random Forests provide complementary approaches to the classification problem. The former offers a relatively interpretable representation of decision rules, whereas the latter combines multiple randomized trees to improve predictive robustness. Their comparison helps determine whether the increased complexity of an ensemble model provides meaningful benefits over an individual tree.
+
+
 
 \subsection{Naive Bayes}
-\TODO{Bayes' theorem, independence assumption, smoothing}
+
+Naive Bayes is a family of probabilistic classifiers based on Bayes' theorem. It estimates the probability that an observation belongs to a given class by combining prior class probabilities with the likelihood of observing the input features under that class. For a feature vector $\mathbf{x}$ and a class $C_k$, Bayes' theorem is expressed as:
+
+\begin{equation}
+P(C_k \mid \mathbf{x}) =
+\frac{P(\mathbf{x} \mid C_k)P(C_k)}
+{P(\mathbf{x})}
+\label{eq:bayes}
+\end{equation}
+
+In this expression, $P(C_k)$ is the prior probability of class $C_k$, $P(\mathbf{x}\mid C_k)$ is the likelihood of observing the feature vector given that class, and $P(C_k\mid\mathbf{x})$ is the posterior probability. Since $P(\mathbf{x})$ is identical for every candidate class, classification can be performed by selecting the class that maximises the product of the likelihood and the prior:
+
+\begin{equation}
+\hat{C} =
+\arg\max_{C_k}
+P(\mathbf{x}\mid C_k)P(C_k)
+\label{eq:naive_bayes_decision}
+\end{equation}
+
+The term \emph{naive} refers to the conditional independence assumption: given the class, the model assumes that the input features are independent of one another. Under this assumption, the joint likelihood can be factorised into individual feature likelihoods:
+
+\begin{equation}
+P(\mathbf{x}\mid C_k) =
+\prod_{j=1}^{d} P(x_j\mid C_k)
+\label{eq:naive_bayes_independence}
+\end{equation}
+
+This assumption considerably simplifies probability estimation and makes the algorithm computationally efficient. However, it may be unrealistic when features are strongly correlated. In this project, for example, total bytes and directional byte counts are mathematically related, while total packet counts are related to their directional components. Such dependencies may affect the probability estimates produced by the classifier.
+
+The Gaussian Naive Bayes variant assumes that each numerical feature follows a Gaussian distribution within each class. Its likelihood is therefore modelled as:
+
+\begin{equation}
+P(x_j\mid C_k) =
+\frac{1}{\sqrt{2\pi\sigma_{kj}^{2}}}
+\exp\left(
+-\frac{(x_j-\mu_{kj})^2}{2\sigma_{kj}^{2}}
+\right)
+\label{eq:gaussian_likelihood}
+\end{equation}
+
+where $\mu_{kj}$ and $\sigma_{kj}^{2}$ represent the mean and variance of feature $j$ for class $C_k$. In practice, very small estimated variances can cause numerical instability. Gaussian Naive Bayes addresses this issue through variance smoothing, which adds a small value to the estimated variances. In scikit-learn, the smoothing contribution is determined by multiplying the \texttt{var\_smoothing} parameter by the largest feature variance.
+
+For this project, Gaussian Naive Bayes was selected as a computationally inexpensive probabilistic baseline that provides a useful contrast with distance-based, tree-based, and margin-based classifiers. It is trained using the same preprocessed feature representation as the other models. The variance smoothing parameter is tuned over the values $10^{-11}$ to $10^{-5}$ using cross-validation. Its principal advantages are simplicity and fast training, whereas its conditional independence and Gaussian distribution assumptions may limit its ability to represent complex relationships in firewall traffic data.
 
 \subsection{Support Vector Machines}
-\TODO{Margin, kernels, parameters C and gamma}
+
+Support Vector Machines (SVMs) are supervised learning algorithms that seek a decision boundary separating observations belonging to different classes. In binary classification, this boundary is a hyperplane defined by a weight vector $\mathbf{w}$ and a bias term $b$:
+
+\begin{equation}
+\mathbf{w}^{T}\mathbf{x}+b=0
+\label{eq:svm_hyperplane}
+\end{equation}
+
+The central objective of an SVM is to find a separating hyperplane that maximises the margin, defined as the distance between the decision boundary and the closest training observations. These observations are called \emph{support vectors}, because they determine the position of the optimal boundary.
+
+Real-world datasets are not always perfectly separable. The soft-margin formulation therefore introduces slack variables $\xi_i$ to allow some observations to violate the margin constraints. The optimisation problem is:
+
+\begin{equation}
+\begin{aligned}
+\min_{\mathbf{w},b,\boldsymbol{\xi}}\quad
+& \frac{1}{2}\|\mathbf{w}\|^2
++ C\sum_{i=1}^{n}\xi_i\\
+\text{subject to}\quad
+& y_i(\mathbf{w}^{T}\mathbf{x}_i+b)
+\geq 1-\xi_i,\\
+& \xi_i\geq 0,\quad i=1,\ldots,n
+\end{aligned}
+\label{eq:svm_optimization}
+\end{equation}
+
+where $y_i\in\{-1,+1\}$ is the class label of observation $i$, and $C$ is a regularisation parameter controlling the trade-off between maximising the margin and penalising classification errors. A large value of $C$ penalises violations more strongly and may produce a narrower margin, whereas a smaller value allows more violations in exchange for stronger regularisation.
+
+When a linear boundary cannot adequately represent the structure of the data, SVMs can use the \emph{kernel trick}. A kernel function computes similarities between observations in an implicit feature space without explicitly constructing the transformed coordinates. Common kernel functions include:
+
+\begin{equation}
+K(\mathbf{x}_i,\mathbf{x}_j)
+= \mathbf{x}_i^{T}\mathbf{x}_j
+\qquad \text{(linear)}
+\label{eq:linear_kernel}
+\end{equation}
+
+\begin{equation}
+K(\mathbf{x}_i,\mathbf{x}_j)
+= \exp\left(
+-\gamma\|\mathbf{x}_i-\mathbf{x}_j\|^2
+\right)
+\qquad \text{(RBF)}
+\label{eq:rbf_kernel}
+\end{equation}
+
+\begin{equation}
+K(\mathbf{x}_i,\mathbf{x}_j)
+= (\gamma\mathbf{x}_i^{T}\mathbf{x}_j+r)^q
+\qquad \text{(polynomial)}
+\label{eq:polynomial_kernel}
+\end{equation}
+
+The RBF kernel uses $\gamma$ to control the influence of individual training observations: a larger value produces a more local influence, while a smaller value produces a smoother decision boundary. In the polynomial kernel, $q$ represents the polynomial degree and $r$ is a constant term. The parameter $\gamma$ is therefore relevant to non-linear kernels, but not to the linear kernel.
+
+SVMs were selected because they can construct effective decision boundaries in high-dimensional feature spaces and provide a different modelling approach from the other classifiers. This is particularly relevant after the categorical port attributes have been one-hot encoded and the numerical attributes standardised. The project investigates linear, radial basis function (RBF), and polynomial kernels. The regularisation parameter $C$ is tuned for all three; $\gamma$ is explored for the RBF kernel, while the polynomial degree is varied for the polynomial kernel.
+
+SVM training can be computationally expensive on large datasets, especially when non-linear kernels are used. Consequently, the SVM grid search is performed on a stratified sample of 12,043 training observations, while the other classifiers use the complete training set. This difference in experimental conditions must be considered when interpreting the comparative results. The theoretical basis of SVMs was introduced by Cortes and Vapnik~\cite{cortes1995support}.
 
 \section{Model Evaluation}
-% Confusion matrix, precision, recall, F1-score, macro-F1, balanced accuracy, one-vs-rest ROC-AUC.
-% Explain why accuracy alone can be misleading when one class is extremely rare.
-\TODO{Definitions with formulas (\texttt{equation}) and justified metric selection}
+
+Evaluating a classification model requires more than measuring the proportion of correct predictions. A model may perform well on the most frequent class while failing to recognise less frequent classes. This is particularly important in the present project, where the four firewall actions have substantially different frequencies. The evaluation therefore combines a confusion matrix, class-specific measures, and aggregate metrics that provide complementary views of predictive performance.
+
+\subsection{Confusion Matrix}
+
+A confusion matrix summarises the predictions made by a classifier by comparing the actual class labels with the predicted labels. In a multiclass problem, each row represents an actual class and each column represents a predicted class. The diagonal entries correspond to correctly classified observations, whereas off-diagonal entries represent classification errors.
+
+For a particular class $C_i$, the following quantities can be derived by treating that class as the positive class and all other classes as negative:
+
+\begin{itemize}
+  \item \textbf{True Positives (TP):} observations belonging to $C_i$ that are correctly predicted as $C_i$.
+  \item \textbf{False Positives (FP):} observations belonging to other classes that are incorrectly predicted as $C_i$.
+  \item \textbf{False Negatives (FN):} observations belonging to $C_i$ that are incorrectly assigned to another class.
+  \item \textbf{True Negatives (TN):} observations belonging to other classes that are correctly assigned to a class other than $C_i$.
+\end{itemize}
+
+The confusion matrix is especially useful for identifying which firewall actions are frequently confused. In particular, it makes it possible to examine whether the rare \emph{reset-both} class is recognised or systematically assigned to a more frequent class.
+
+\subsection{Classification Metrics}
+
+The following metrics are used to quantify different aspects of classification performance.
+
+\textbf{Accuracy.} Accuracy measures the proportion of all observations that are correctly classified:
+
+\begin{equation}
+\text{Accuracy} =
+\frac{\sum_{i=1}^{n}\mathbb{1}(\hat{y}_i=y_i)}{n}
+\label{eq:accuracy}
+\end{equation}
+
+where $y_i$ is the actual label, $\hat{y}_i$ is the predicted label, $n$ is the number of observations, and $\mathbb{1}(\cdot)$ is an indicator function equal to one when its condition is true. Although intuitive, accuracy can be misleading when the class distribution is highly imbalanced.
+
+\textbf{Precision.} Precision measures the proportion of predictions for a class that are correct:
+
+\begin{equation}
+\text{Precision}_i =
+\frac{TP_i}{TP_i+FP_i}
+\label{eq:precision}
+\end{equation}
+
+A high precision indicates that predictions assigned to class $C_i$ are rarely false positives.
+
+\textbf{Recall.} Recall measures the proportion of actual observations of a class that the model successfully identifies:
+
+\begin{equation}
+\text{Recall}_i =
+\frac{TP_i}{TP_i+FN_i}
+\label{eq:recall}
+\end{equation}
+
+A high recall indicates that relatively few observations belonging to class $C_i$ are missed.
+
+\textbf{F1-score.} The F1-score is the harmonic mean of precision and recall, providing a single measure that balances the two:
+
+\begin{equation}
+F1_i =
+2\cdot
+\frac{\text{Precision}_i\cdot\text{Recall}_i}
+{\text{Precision}_i+\text{Recall}_i}
+\label{eq:f1}
+\end{equation}
+
+It is particularly useful when both false positive and false negative predictions matter.
+
+\textbf{Macro-averaged F1-score.} Macro-F1 is the unweighted arithmetic mean of the F1-scores calculated independently for each class:
+
+\begin{equation}
+F1_{\text{macro}} =
+\frac{1}{K}\sum_{i=1}^{K}F1_i
+\label{eq:macro_f1}
+\end{equation}
+
+where $K$ is the number of classes. Each class contributes equally, regardless of its number of observations. Consequently, a poor result on a rare class has the same influence on macro-F1 as a poor result on a frequent class.
+
+\textbf{Weighted F1-score.} Weighted F1 also averages the class-specific F1-scores, but weights each class according to its support:
+
+\begin{equation}
+F1_{\text{weighted}} =
+\sum_{i=1}^{K}\frac{n_i}{n}F1_i
+\label{eq:weighted_f1}
+\end{equation}
+
+where $n_i$ is the number of actual observations belonging to class $C_i$, and $n$ is the total number of observations. This metric reflects performance across the dataset while accounting for the class distribution.
+
+\textbf{Balanced accuracy.} Balanced accuracy is the arithmetic mean of the recall values across all classes:
+
+\begin{equation}
+\text{Balanced Accuracy} =
+\frac{1}{K}\sum_{i=1}^{K}\text{Recall}_i
+\label{eq:balanced_accuracy}
+\end{equation}
+
+Unlike ordinary accuracy, it gives equal importance to each class and is therefore appropriate for imbalanced classification problems.
+
+\textbf{ROC-AUC.} The Receiver Operating Characteristic (ROC) curve represents the relationship between the true positive rate and the false positive rate at different classification thresholds. The Area Under the Curve (AUC) summarises this relationship. For a multiclass problem, the one-vs-rest approach evaluates each class against all remaining classes and aggregates the resulting AUC values. A higher AUC indicates better discrimination between the considered class and the others.
+
+\textbf{Average Precision.} Average Precision (AP) summarises the precision-recall relationship across different decision thresholds. It is particularly informative when evaluating a rare positive class, because it focuses on the trade-off between identifying its observations and avoiding false positive predictions. In this project, AP is specifically reported for the \emph{reset-both} class.
+
+\subsection{Metric Selection for the Project}
+
+The dataset contains four action classes, but their frequencies are highly unequal. In particular, \emph{reset-both} accounts for only 54 observations in the original dataset, representing approximately 0.08\% of all records. A classifier that predominantly predicts the majority class may therefore obtain a seemingly acceptable accuracy while failing to recognise the rarest action.
+
+For this reason, the \textbf{macro-averaged F1-score is selected as the primary model-selection metric}. It assigns equal importance to all four classes and penalises classifiers that neglect minority actions. Balanced accuracy provides a complementary measure of class-wise recall, while weighted F1 and ordinary accuracy describe performance with respect to the observed class distribution.
+
+The evaluation also includes one-vs-rest ROC-AUC, Average Precision for \emph{reset-both}, prediction time, and per-class confusion matrices. Together, these measures provide a more complete assessment than accuracy alone. They allow the project to compare overall performance, minority-class recognition, class-specific errors, and computational efficiency.
 
 \section{Cross-Validation and Hyperparameter Tuning}
-% Stratified K-Fold, grouped cross-validation, GridSearchCV / RandomizedSearchCV (K >= 5),
-% separation between model tuning (cross-validation) and final testing.
-\TODO{Principles and justification of the evaluation protocol}
+
+A model's measured performance depends not only on its learning algorithm but also on the observations used for training and evaluation. A single random split may produce an unrepresentative estimate, particularly when the dataset contains repeated observations or highly imbalanced classes. Cross-validation addresses this issue by evaluating a model across multiple training and validation partitions.
+
+\subsection{Cross-Validation Principles}
+
+In $K$-fold cross-validation, the dataset is divided into $K$ subsets, called folds. The model is trained on $K-1$ folds and evaluated on the remaining fold. This process is repeated $K$ times, so that each fold is used once for validation. The resulting scores are then aggregated to estimate the model's performance.
+
+Stratified cross-validation attempts to preserve the class proportions in each fold. This is important in multiclass classification because a fold that contains too few observations from a rare class may produce an unstable or incomplete evaluation.
+
+However, ordinary stratification does not prevent identical feature vectors from appearing in both the training and validation subsets. This is a concern in the present dataset, where repeated and conflicting observations have been identified. Group-aware cross-validation addresses this problem by assigning all observations belonging to the same group to a single fold. When groups are defined by identical feature vectors, the same vector cannot occur on both sides of a validation split.
+
+\subsection{Group-Aware Evaluation Protocol}
+
+The project uses \texttt{StratifiedGroupKFold}, which combines approximate class stratification with group separation. Each distinct feature vector defines a group, ensuring that identical input vectors are not shared between training and validation subsets.
+
+After removing the 8,362 exact duplicate records, the dataset contains 57,170 unique records. It is divided into five grouped folds using random seed 42. One fold, representing approximately 20\% of the observations, is reserved as the final test set, while the remaining four folds form the training set. The resulting partitions contain 11,434 test observations and 45,736 training observations.
+
+Within the training set, the same five-fold group-aware strategy is used for model selection and hyperparameter tuning. In each iteration, four folds are used to train the model and the remaining fold is used for validation. The grouping constraint ensures that identical feature vectors do not occur in both parts of a fold. This reduces the risk of overly optimistic validation scores caused by repeated observations.
+
+\subsection{Hyperparameter Tuning}
+
+Hyperparameters are configuration values selected before or during model training. Unlike model parameters, which are learned from the training observations, hyperparameters control the learning process itself. Examples include the number of neighbours in KNN, the maximum depth of a decision tree, and the regularisation parameter of an SVM.
+
+The project uses \texttt{GridSearchCV} to evaluate predefined combinations of hyperparameters through five-fold cross-validation. For each candidate combination, the model is trained and validated across the folds. The mean validation score is then used to identify the best configuration according to the selected metric.
+
+The search explores 122 hyperparameter combinations across the six classifiers, resulting in 610 model fits. The parameter ranges are designed to investigate the main factors controlling model complexity and predictive behaviour. The SVM search is performed on a stratified subset of 12,043 training observations because of the computational cost of non-linear kernels. All 43 training observations belonging to the \emph{reset-both} class are retained in this subset.
+
+The primary selection criterion is the mean cross-validated macro-F1-score. This ensures that the tuning process prioritises balanced performance across the four firewall actions rather than optimising performance on the majority class alone.
+
+\subsection{Separation Between Model Selection and Final Testing}
+
+A fundamental requirement of reliable model evaluation is that the final test set must remain independent of the decisions made during model development. If test observations influence hyperparameter selection, feature selection, or model choice, the reported test performance may become optimistically biased.
+
+Accordingly, the test set is not used during cross-validation or hyperparameter tuning. Once the best configuration has been selected, the corresponding model is refitted using the complete training set and evaluated once on the reserved test set. This provides an independent estimate of its performance on observations that were not used during training or model selection.
+
+This protocol establishes a clear distinction between validation, which supports model selection, and final testing, which assesses the selected model. The implementation relies on grouped splitting and preprocessing pipelines to prevent information from validation or test observations from influencing the fitted transformations.
 
 \section{Statistical Tests}
-% Kruskal-Wallis (compare Bytes across the four actions), chi-square test of independence and Cramér's V
-% (zero or non-zero NAT Source Port against Action), Spearman correlation.
-% For each test: hypotheses, test statistic, conditions of use, and why it is appropriate here.
-\TODO{Three tests: definition, explanation, and role in the project}
+
+Statistical tests provide a formal way to determine whether observed relationships in a dataset are likely to reflect meaningful differences rather than random variation. In this project, they complement descriptive statistics and visual analysis by examining relationships between firewall actions and traffic characteristics.
+
+Three principal methods are considered: the Kruskal--Wallis test for comparing numerical features across action classes, the chi-square test of independence for categorical relationships, and Spearman's rank correlation for measuring monotonic associations between numerical features.
+
+\subsection{Kruskal--Wallis Test}
+
+The Kruskal--Wallis test is a non-parametric statistical test used to compare the distributions of a numerical variable across two or more independent groups. It is an alternative to one-way analysis of variance (ANOVA) when the assumptions of normality and equal variances are not adequately satisfied. Rather than comparing the original numerical values directly, it operates on their ranks.
+
+For $K$ independent groups, the test statistic is defined as:
+
+\begin{equation}
+H =
+\frac{12}{N(N+1)}
+\sum_{i=1}^{K}\frac{R_i^2}{n_i}
+-3(N+1)
+\label{eq:kruskal_wallis}
+\end{equation}
+
+where $N$ is the total number of observations, $n_i$ is the number of observations in group $i$, and $R_i$ is the sum of the ranks assigned to observations in that group. Under the null hypothesis, the statistic approximately follows a chi-square distribution with $K-1$ degrees of freedom, subject to the usual large-sample approximation.
+
+The hypotheses are:
+
+\begin{itemize}
+  \item $H_0$: the groups originate from the same distribution.
+  \item $H_1$: at least one group differs from the others.
+\end{itemize}
+
+A small p-value provides evidence against the null hypothesis, indicating that at least one group has a different distribution. However, the test does not identify which specific pairs of groups differ. Post-hoc procedures, such as Dunn's test with an appropriate multiple-comparison correction, are needed for pairwise analysis.
+
+In this project, the Kruskal--Wallis test is applied to the seven numerical traffic features across the four firewall action classes. It is appropriate because the numerical variables are strongly skewed and the normality and equal-variance assumptions required by conventional ANOVA are not satisfied. The effect size $\varepsilon^2$ is also calculated to quantify the magnitude of the observed differences:
+
+\begin{equation}
+\varepsilon^2 = \frac{H}{N-1}
+\label{eq:kruskal_effect}
+\end{equation}
+
+This analysis determines whether traffic volume, packet counts, and connection duration differ across firewall decisions, providing statistical support for the patterns observed during exploratory data analysis~\cite{kruskal1952use}.
+
+\subsection{Chi-Square Test of Independence and Cramér's V}
+
+The chi-square test of independence is used to determine whether two categorical variables are statistically associated. It compares the observed frequencies in a contingency table with the frequencies that would be expected if the variables were independent.
+
+The test statistic is:
+
+\begin{equation}
+\chi^2 =
+\sum_{i=1}^{r}\sum_{j=1}^{c}
+\frac{(O_{ij}-E_{ij})^2}{E_{ij}}
+\label{eq:chi_square}
+\end{equation}
+
+where $O_{ij}$ is the observed frequency in row $i$ and column $j$, $E_{ij}$ is the corresponding expected frequency under independence, and $r$ and $c$ are the numbers of rows and columns. The expected frequency is calculated as:
+
+\begin{equation}
+E_{ij} =
+\frac{(\text{Row Total}_i)(\text{Column Total}_j)}{N}
+\label{eq:expected_frequency}
+\end{equation}
+
+The hypotheses are:
+
+\begin{itemize}
+  \item $H_0$: the two categorical variables are independent.
+  \item $H_1$: the two variables are statistically associated.
+\end{itemize}
+
+The test is based on a comparison between observed and expected frequencies. Its usual asymptotic approximation requires sufficiently large expected cell counts. When this condition is not satisfied, an alternative such as a permutation-based procedure may be more appropriate.
+
+Although the chi-square statistic indicates whether an association exists, it does not directly quantify its strength. Cramér's V provides an effect-size measure ranging from zero to one:
+
+\begin{equation}
+V =
+\sqrt{
+\frac{\chi^2}
+{N\min(r-1,c-1)}
+}
+\label{eq:cramers_v}
+\end{equation}
+
+A value close to zero indicates a weak association, whereas a value closer to one indicates a stronger association~\cite{cramer1946mathematical}.
+
+In this project, the test is used to examine the relationship between the firewall action and categorical traffic characteristics. One analysis considers whether the NAT source port is zero or non-zero, while another examines destination-port categories. These tests help determine whether particular port characteristics are strongly associated with the action recorded by the firewall. For the destination-port contingency table, sparse expected frequencies require a Monte Carlo permutation approach rather than relying exclusively on the asymptotic chi-square p-value.
+
+\subsection{Spearman's Rank Correlation}
+
+Spearman's rank correlation coefficient measures the strength and direction of a monotonic relationship between two variables. Unlike Pearson's correlation coefficient, which measures linear association using the original numerical values, Spearman's method operates on ranks. It can therefore capture monotonic relationships that are not necessarily linear and is less dependent on distributional assumptions.
+
+For two variables $X$ and $Y$, their observations are converted into ranks before calculating the correlation. When there are no tied ranks, the coefficient can be expressed as:
+
+\begin{equation}
+\rho =
+1-\frac{6\sum_{i=1}^{N}d_i^2}
+{N(N^2-1)}
+\label{eq:spearman}
+\end{equation}
+
+where $d_i$ is the difference between the ranks of the two variables for observation $i$, and $N$ is the number of observations. When tied values occur, the coefficient is calculated as the Pearson correlation between the rank-transformed variables.
+
+The coefficient ranges from $-1$ to $+1$:
+
+\begin{itemize}
+  \item $\rho=+1$ indicates a perfect positive monotonic relationship.
+  \item $\rho=-1$ indicates a perfect negative monotonic relationship.
+  \item $\rho\approx 0$ indicates little or no monotonic association.
+\end{itemize}
+
+In this project, Spearman's correlation is applied to the numerical traffic features to investigate redundancy and identify variables that carry similar information. For example, total bytes and directional byte counts may be strongly correlated because they describe related aspects of the same traffic volume. Identifying such relationships helps interpret the feature space and understand the potential influence of redundant variables on classification algorithms.
+
+Because several pairwise correlations are examined, the resulting p-values are adjusted using the Benjamini--Hochberg procedure to control the false discovery rate. Spearman's original formulation provides the theoretical basis for this analysis~\cite{spearman1904proof}.
 
 \section{Class Imbalance, Duplicates, and Data Leakage}
-% Rare classes, exact duplicates, conflicting labels, data leakage (features known only after the decision),
-% grouped splitting to prevent identical vectors from appearing in both training and test sets.
-\TODO{Concepts and risks, with references}
+
+Reliable classification depends not only on the choice of algorithm but also on the quality and structure of the training data. Three issues are particularly relevant to firewall traffic classification: class imbalance, duplicated observations, and data leakage. If these issues are not addressed, a model may appear to perform well during evaluation without learning patterns that generalise reliably to unseen observations.
+
+\subsection{Class Imbalance}
+
+Class imbalance occurs when the number of observations differs substantially between target classes. In such datasets, learning algorithms may favour the majority class because it contributes most frequently to the training objective. Consequently, minority classes may be poorly recognised even when the overall accuracy appears satisfactory.
+
+The firewall dataset exhibits a pronounced imbalance. The \emph{allow} class represents approximately 57.4\% of the original records, while \emph{reset-both} accounts for only 54 observations, or approximately 0.08\%. This difference makes it difficult for a classifier to learn reliable decision boundaries for the rarest action.
+
+Accuracy alone is therefore insufficient to assess model quality. A classifier that frequently predicts the majority class may achieve a relatively high accuracy while failing to identify rare actions. Macro-F1 and balanced accuracy address this limitation by giving equal importance to the performance of each class. Per-class precision, recall, F1-scores, and confusion matrices provide further insight into minority-class errors.
+
+\subsection{Duplicate Observations and Conflicting Labels}
+
+Duplicate observations are records that contain identical values. In classification datasets, repeated records can unintentionally increase the influence of particular patterns during training. More importantly, if identical observations are distributed between training and test sets, the model may be evaluated on feature vectors that it has already encountered.
+
+The original firewall dataset contains 8,362 exact duplicate records, representing approximately 12.76\% of the observations. These records are removed before the train-test split to prevent repeated observations from artificially influencing the evaluation.
+
+A related issue concerns conflicting labels. This occurs when two or more records have identical input features but different target labels. In such cases, the same feature vector corresponds to multiple observed firewall actions. The classifier cannot distinguish these records using the available features alone, which introduces ambiguity into the learning problem.
+
+The dataset contains nine feature vectors associated with different actions, representing 46 original records. These observations are retained because they reflect inconsistencies present in the historical data. To prevent identical feature vectors from appearing on opposite sides of an evaluation split, the project uses group-aware splitting, with each distinct feature vector assigned to a single group.
+
+\subsection{Data Leakage}
+
+Data leakage occurs when information that would not legitimately be available during model training or prediction is allowed to influence the learning process. It can produce overly optimistic performance estimates because the model indirectly receives information about the target or the evaluation data~\cite{kaufman2012leakage}.
+
+Two forms are particularly relevant to this project:
+
+\begin{itemize}
+  \item \textbf{Target leakage:} occurs when an input feature contains information that is determined by, or becomes available as a consequence of, the target variable. For example, NAT-related port values may reveal that a connection was translated following an \emph{allow} decision. Such information can make the classification task artificially easier.
+  \item \textbf{Train-test contamination:} occurs when information from validation or test observations influences preprocessing, feature selection, or model fitting. For example, fitting a scaler or an encoder using the entire dataset before splitting allows information from the evaluation data to influence the training process.
+\end{itemize}
+
+The project addresses these risks through several safeguards. First, preprocessing operations are integrated into a pipeline and fitted using training data only. Numerical features are transformed and standardised, while categorical port features are one-hot encoded using categories learned from the training data. Second, duplicate observations are removed, and identical feature vectors are kept within the same group during splitting and cross-validation. Third, feature ablation experiments examine whether potentially suspicious attributes, such as NAT-related ports and connection duration, disproportionately influence model performance.
+
+An important distinction must nevertheless be maintained: the project analyses completed historical firewall records. Some attributes may only become available after the firewall has made its original decision. Their use is therefore acceptable for retrospective log analysis, but it does not establish that the same model could predict the decision before it occurs in a live firewall. The prediction scope must remain consistent with the information available at the intended prediction time.
 
 \section{Conclusion}
-\TODO{Chapter conclusion and transition to Chapter~\ref{chap:donnees}}
+
+This chapter presented the theoretical foundations required to understand the classification methods and evaluation procedures used in the Intelligent Firewall Traffic Analyzer project. It introduced the supervised learning algorithms, including Naive Bayes and Support Vector Machines, and explained the metrics used to compare their predictive performance. Particular attention was given to macro-F1 and balanced accuracy because the firewall dataset contains a highly imbalanced distribution of action classes.
+
+The chapter also described the principles of grouped cross-validation and hyperparameter tuning, which provide a structured basis for comparing classifiers while limiting evaluation bias. Finally, the statistical methods and data-related challenges were discussed, including class imbalance, duplicate observations, conflicting labels, and potential data leakage.
+
+These concepts establish the theoretical basis for the experimental work. The following chapter examines the UCI Internet Firewall Data dataset in detail, presents its attributes and class distribution, evaluates its data quality, and investigates the statistical relationships between traffic characteristics and firewall actions. This analysis provides the empirical foundation for the methodology developed in Chapter~\ref{chap:methodologie}.

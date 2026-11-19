@@ -1,33 +1,122 @@
-\chapter{Context and Problem Statement}\label{chap:contexte}
+
+\chapter{Context and Problem Statement}
+\label{chap:contexte}
 
 \section{Introduction}
-% Context -> Problem -> Approach -> Chapter Outline (3 to 5 lines).
-\TODO{Chapter introduction}
+
+Firewalls are essential components of network security, responsible for controlling network communications according to predefined access-control policies. Their operation generates traffic logs containing valuable information about network activity and the security decisions applied to individual communications. However, the increasing volume of these records makes their manual examination challenging, creating an opportunity for automated analysis through Data Mining techniques. In this context, this project investigates the use of supervised Machine Learning algorithms to classify historical firewall traffic records according to their associated actions. This chapter introduces the concepts underlying the project, formulates the classification problem, establishes its objectives and constraints, and reviews related research to position the proposed work.
 
 \section{Firewalls and Traffic Logs}
-% Define: firewall, log, network flow, ports, NAT.
-% Define the four actions: allow, deny, drop, reset-both (one sentence each).
-% For each concept: definition -> explanation -> role in the project. Cite sources (Google Scholar).
-\TODO{Definitions and the role of each concept in the project}
+
+A firewall is a network security mechanism that monitors and controls incoming and outgoing network traffic according to a set of predefined security rules. These rules specify the conditions under which network communications are permitted or restricted, based on attributes such as source and destination addresses, port numbers, protocols, and connection states. Depending on its configuration and operating mode, a firewall can inspect individual packets or maintain information about ongoing network connections. In this project, the firewall represents the security mechanism responsible for generating the traffic records that constitute the dataset under investigation.
+
+A firewall log is a structured record of network activity observed by a firewall, including information about the communication and the action applied to it. Such records provide a historical trace that can support network monitoring, troubleshooting, security auditing, and traffic analysis \cite{aljabri2022firewall,rahman2023firewall}. In the selected dataset, each record contains eleven input attributes describing a network communication, together with an associated \texttt{Action} label. These records constitute the observations used to develop and evaluate the classification models.
+
+A network flow represents a sequence of packets associated with a particular communication, generally characterized by a combination of network attributes such as source and destination endpoints and transport-layer information. Flow-level characteristics can also include the amount of transmitted data, packet counts, and communication duration. Unlike individual packet inspection, flow-based analysis provides an aggregated representation of network activity. In this project, the available flow-related attributes serve as the descriptive information from which the classification algorithms learn patterns associated with firewall actions.
+
+Port numbers identify communication endpoints at the transport layer and help distinguish network services and applications. A source port identifies the originating transport endpoint, whereas a destination port identifies the receiving transport endpoint. Network Address Translation (NAT) is a mechanism that modifies network addressing information, potentially including transport-layer port numbers, when traffic crosses a network boundary. Consequently, NAT source and destination ports provide additional information about address or port translation. The selected dataset includes four port-related attributes: source port, destination port, NAT source port, and NAT destination port. These attributes are treated as categorical features during preprocessing because they identify communication endpoints rather than represent continuous numerical quantities.
+
+The firewall decisions recorded in the dataset are represented by four distinct action categories:
+
+\begin{itemize}
+    \item \texttt{allow}: permits the corresponding network communication.
+    \item \texttt{deny}: rejects the communication according to the firewall policy.
+    \item \texttt{drop}: silently discards the communication without an explicit rejection response.
+    \item \texttt{reset-both}: terminates the communication by resetting both endpoints.
+\end{itemize}
+
+These action labels constitute the target variable of the classification problem. The distinction between them is important because the objective is not simply to identify whether traffic is permitted or blocked, but to distinguish between all four recorded firewall outcomes. Accordingly, the project uses the historical traffic attributes to learn the relationship between network communication characteristics and their associated firewall actions.
 
 \section{Problem Statement and Objectives}
-% Formulate: y = Action in {allow, deny, drop, reset-both}, based on 11 attributes (numbered equation).
-% Distinguish retrospective log classification from prediction before the decision is made.
-% Present scientific objectives followed by practical objectives.
-\TODO{Formal problem statement and objectives}
+
+The central problem addressed in this project is the automatic classification of historical firewall traffic records according to their associated actions. Although firewall logs contain structured information about network communications and the decisions applied to them, extracting predictive relationships from these attributes requires appropriate data preparation, statistical analysis, and classification techniques. The research question guiding this work is therefore formulated as follows:
+
+\begin{quote}
+\textit{To what extent can supervised Machine Learning algorithms learn the relationship between network traffic attributes and recorded firewall actions, and how reliably can they classify previously unseen firewall traffic records?}
+\end{quote}
+
+This problem is formulated as a supervised multiclass classification task. Let the dataset be represented by:
+
+\begin{equation}
+    D = \left\{(x_i,y_i)\right\}_{i=1}^{N}
+    \label{eq:classification-dataset}
+\end{equation}
+
+where $N$ denotes the total number of observations, $x_i$ represents the eleven input attributes describing observation $i$, and $y_i$ represents its corresponding firewall action. The objective is to learn a classification function:
+
+\begin{equation}
+    f:\mathcal{X}\rightarrow\mathcal{Y}
+    \label{eq:classification-function}
+\end{equation}
+
+where $\mathcal{X}$ denotes the input feature space and the target space is defined as:
+
+\begin{equation}
+    \mathcal{Y} =
+    \{\texttt{allow},\texttt{deny},
+    \texttt{drop},\texttt{reset-both}\}.
+    \label{eq:action-classes}
+\end{equation}
+
+The function $f$ estimates the firewall action associated with a given traffic record based on the patterns learned from historical observations. The objective is to obtain reliable classification performance across all four categories, including those represented by relatively few observations.
+
+An important distinction concerns the temporal nature of the prediction task. The proposed system performs retrospective classification of recorded traffic flows rather than predicting firewall decisions before they are executed. Some available attributes, particularly transmitted bytes, packet counts, and elapsed time, describe completed or observed communication activity and may only become available after the corresponding firewall decision. Consequently, the resulting model is intended for historical traffic analysis and decision support, not for real-time packet filtering or pre-decision policy enforcement.
+
+The project is guided by the following scientific objectives:
+
+\begin{itemize}
+    \item \textbf{Dataset understanding:} Examine the dataset structure, feature distributions, class frequencies, and relationships between traffic attributes through Exploratory Data Analysis.
+    
+    \item \textbf{Data quality assessment:} Investigate duplicate observations, conflicting labels, potential outliers, and other characteristics that may affect the reliability of the analysis.
+    
+    \item \textbf{Statistical investigation:} Examine relationships between selected traffic attributes and firewall actions using appropriate statistical hypothesis tests.
+    
+    \item \textbf{Classification model comparison:} Evaluate multiple supervised learning algorithms and identify the most suitable approach for the four-class classification problem.
+    
+    \item \textbf{Performance evaluation:} Assess predictive performance using appropriate classification metrics and cross-validation, with particular attention to performance across individual classes.
+    
+    \item \textbf{Feature relevance analysis:} Investigate the contribution of input attributes to classification performance through feature ablation and feature importance techniques.
+\end{itemize}
+
+In addition to these scientific objectives, the project includes the following practical objectives:
+
+\begin{itemize}
+    \item Implement a complete data preprocessing and classification pipeline.
+    \item Optimize the selected models through systematic hyperparameter evaluation.
+    \item Export the selected trained pipeline for subsequent inference.
+    \item Develop a local Streamlit application supporting individual and batch predictions, together with interactive analytical visualizations.
+\end{itemize}
 
 \section{Project Scope and Constraints}
-% 2026/2027 specifications: Track A (supervised classification), six course models,
-% optimization using cross-validation K >= 5, at least 2 statistical tests, local application,
-% Deep Learning and LLMs prohibited as primary models.
-% Scope: this is neither an intrusion detection system nor a policy enforcement system.
-\TODO{Selected constraints and project scope}
+
+The project follows the supervised classification track defined in the 2026/2027 project specifications. Its scope is restricted to the analysis of historical firewall traffic records using conventional Machine Learning techniques. The experiments rely on the Internet Firewall Data dataset obtained from the UCI Machine Learning Repository \cite{uciFirewallData}. The dataset contains 65,532 observations and twelve columns: eleven input attributes and one target attribute, \texttt{Action}. It was collected from a university firewall and contains four possible action categories. The input attributes describe communication endpoints, NAT-related port information, traffic volumes, packet counts, and elapsed connection time. The dataset documentation reports no missing values.
+
+From a methodological perspective, the project covers data exploration, data quality assessment, preprocessing, statistical analysis, classification, and model evaluation. Six classifiers are considered: a Dummy Classifier serving as a baseline and five supervised learning algorithms, namely K-Nearest Neighbors, Decision Tree, Random Forest, Gaussian Naive Bayes, and Linear Support Vector Machine. The comparison and optimization of these models follow a cross-validation strategy with at least five folds ($K \geq 5$), as required by the project specifications.
+
+The experimental analysis also includes statistical hypothesis testing to investigate relationships between selected variables and firewall actions. In particular, the Kruskal--Wallis test is used to examine differences in byte-related measurements across action categories, while the Chi-square test is used to investigate the association between NAT source-port status and firewall actions. Cram\'er's V is additionally considered to quantify the strength of the association identified by the Chi-square analysis.
+
+Several constraints define the boundaries of the proposed solution. First, the experiments rely on a single publicly available dataset collected within a specific university network environment. Its characteristics may therefore differ from those of other organizational infrastructures, network configurations, or traffic conditions. Second, the dataset provides structured traffic attributes rather than complete packet payloads or comprehensive contextual information about users, applications, and security incidents. Third, the distribution of firewall actions is not necessarily balanced, which may affect the ability of classification algorithms to recognize less frequent categories. Duplicate observations and potential label inconsistencies also require examination to avoid misleading experimental conclusions.
+
+Another important constraint concerns data leakage, which occurs when information that should remain unavailable during model training or evaluation influences the learning process and produces overly optimistic performance estimates \cite{kaufman2012leakage}. Particular attention must therefore be given to data splitting, preprocessing, feature selection, and model optimization. Furthermore, the use of attributes describing completed traffic flows limits the interpretation and potential deployment of the resulting classifier.
+
+Finally, the proposed solution is designed as a local analytical and predictive application. It does not constitute an Intrusion Detection System (IDS), inspect live network packets, replace an operational firewall, modify access-control policies, or enforce security decisions. Deep Learning and Large Language Models are also outside the scope of the project specifications as primary classification approaches. The objective is instead to investigate conventional supervised classification techniques and demonstrate their practical application through an interactive analytical environment.
+
+These boundaries establish the experimental conditions under which the proposed models are developed and evaluated. Consequently, the conclusions of this work concern their ability to classify observations from the selected historical dataset and should not be interpreted as evidence of guaranteed performance in other network environments.
 
 \section{Related Work}
-% 3 to 5 papers reviewed (Google Scholar), paraphrased and cited: firewall log classification,
-% UCI Internet Firewall Data dataset. Conclude with the positioning of this project.
-\TODO{Related work using \texttt{\textbackslash cite}}
+
+The application of Machine Learning to firewall log analysis has been investigated in several studies, particularly in the context of multiclass classification of recorded firewall actions. These contributions demonstrate the potential of supervised learning for extracting relationships between network traffic characteristics and firewall decisions, while also highlighting differences in datasets, feature representations, and evaluation strategies.
+
+Ertam and Kaya \cite{ertam2018firewall} investigated the classification of firewall log records using multiclass Support Vector Machines. Their study employed the firewall dataset collected at F{\i}rat University, consisting of 65,532 observations and eleven input features. The authors compared different SVM kernel configurations, including linear, polynomial, sigmoid, and radial basis function kernels, to evaluate their ability to distinguish between the four firewall action categories. Their work is particularly relevant to the present project because it uses the same publicly available dataset and addresses the same classification problem. It therefore provides an important reference for evaluating the application of SVM-based approaches to this type of firewall data.
+
+Aljabri et al. \cite{aljabri2022firewall} proposed a comparative evaluation of Machine Learning and Deep Learning models for multiclass firewall action classification. Their study considered the same four action categories and investigated algorithms including K-Nearest Neighbors, Naive Bayes, J48, Random Forest, and Artificial Neural Networks. The experiments used a dataset collected from a private organizational network and examined different feature configurations, including additional application-related information. Their findings highlighted the potential of ensemble-based classification, particularly Random Forest, while demonstrating the importance of feature selection and representation in firewall log analysis. This study provides a relevant methodological comparison, although its dataset differs from the one used in the present project.
+
+Rahman et al. \cite{rahman2023firewall} also investigated the use of supervised Machine Learning algorithms for multiclass classification of Internet firewall log files. Their work compared several classification approaches using firewall traffic records and evaluated their performance through measures including precision, recall, and F1-score. The authors examined the ability of different algorithms to distinguish between the four firewall action categories and reported strong results for Random Forest. Their contribution further supports the relevance of comparative model evaluation for firewall log classification and provides another reference for the selection of appropriate performance metrics.
+
+The dataset used in this project was made publicly available through the UCI Machine Learning Repository under the name \textit{Internet Firewall Data} \cite{uciFirewallData}. Its 65,532 observations and eleven input attributes provide a reproducible basis for investigating the classification of firewall actions. The dataset has also been used in previous research, notably by Ertam and Kaya, which makes it possible to position the present experiments within an existing line of work.
+
+Building on these contributions, the present project adopts the same general objective of multiclass firewall action classification while emphasizing a broader experimental analysis of data quality and model reliability. In addition to comparing six classifiers, including a baseline model, it investigates duplicate observations, conflicting labels, feature distributions, and statistical relationships between selected attributes and firewall actions. Its methodology also incorporates cross-validation, hyperparameter optimization, macro-averaged evaluation, and feature relevance experiments. Finally, the selected classification pipeline is integrated into a local Streamlit application that provides individual and batch prediction capabilities alongside analytical visualizations. These elements distinguish the project through its combination of methodological investigation, comparative evaluation, and practical implementation.
 
 \section{Conclusion}
-% Summarize in 3 lines and introduce Chapter~\ref{chap:fondements}.
-\TODO{Chapter conclusion and transition}
+
+This chapter established the context and scientific foundations of the Intelligent Firewall Traffic Analyzer project. It introduced the role of firewalls and their traffic logs, formally defined the four-class classification problem, and presented the project's scientific and practical objectives. It also established the scope and constraints of the proposed solution and examined previous research addressing firewall log classification. The next chapter presents the theoretical foundations required to understand the Data Mining process, supervised classification algorithms, statistical techniques, and evaluation principles employed throughout this project.

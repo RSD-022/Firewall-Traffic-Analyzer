@@ -627,19 +627,20 @@ This class has been inspired from thloria, D. Roegel, LORIA]
 % distrib LateX 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\RequirePackage{caption2}
+\RequirePackage{caption}
 
+\DeclareCaptionLabelSeparator{mydash}{~---}
 
-\captionstyle{centerlast}
+\captionsetup{
+    justification=centering,
+    font=footnotesize,
+    labelfont={bf,it},
+    labelsep=mydash,
+    margin=\leftmargini,
+    width=12.9999cm
+}
 
-
-\renewcommand\captionfont{\footnotesize}
-\renewcommand\captionlabelfont{\bfseries\itshape}
-\setcaptionmargin{\leftmargini}
-%\setlength\captionindent{\parindent}
-\renewcommand\captionlabeldelim{~---}
-\onelinecaptionstrue
-\setcaptionwidth{12.9999cm}
+\captionsetup[table]{skip=10pt}
 
 
 

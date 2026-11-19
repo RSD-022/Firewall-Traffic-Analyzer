@@ -69,3 +69,21 @@
 }
 
 \usepackage{setspace}
+
+
+
+% Table caption spacing
+\usepackage{caption}
+\captionsetup[table]{
+    skip=3pt
+}
+
+% Global table-note command
+\newcommand{\tablenote}[1]{%
+    \par\vspace{0.6em}%
+    \noindent
+    \begin{minipage}{0.96\linewidth}
+        \footnotesize
+        #1
+    \end{minipage}%
+}
