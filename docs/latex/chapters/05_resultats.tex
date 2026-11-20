@@ -87,6 +87,49 @@ The methodology also specified a McNemar test to compare the selected Decision T
 
 Gaussian Naive Bayes obtains a lower mean macro-F1 of 0.70760, while the Zero-R baseline reaches only 0.25054. The gap between the selected model and the baseline confirms that the learned decision rules exploit useful information in the input features. Nevertheless, cross-validation estimates must not be confused with final test performance: the Decision Tree's cross-validation macro-F1 is 0.84781, whereas its macro-F1 on the independent test set is 0.79000. The latter is reported in the next section.
 
+\subsection{Best hyperparameters and hyperparameter study}\label{sec:hyperparameter-study}
+
+Table~\ref{tab:best-params} gives the configuration retained by \texttt{GridSearchCV} for each classifier, and Figure~\ref{fig:validation-curves} shows how the main hyperparameters influence the cross-validated macro-F1.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Best hyperparameters selected by GridSearchCV (five grouped folds)}
+  \label{tab:best-params}
+  \small
+  \begin{tabular}{|l|p{9.5cm}|}
+    \hline
+    \textbf{Classifier} & \textbf{Best hyperparameters} \\
+    \hline
+    Random Forest & 200 trees, \texttt{max\_features} = 0.5, \texttt{min\_samples\_leaf} = 2, no class weight \\
+    \hline
+    KNN & $k = 5$, Manhattan distance ($p = 1$), distance weighting \\
+    \hline
+    Decision Tree & Gini criterion, maximum depth 20, \texttt{min\_samples\_leaf} = 1, \texttt{ccp\_alpha} = 0, no class weight \\
+    \hline
+    SVM & RBF kernel, $C = 10$, $\gamma$ = \texttt{scale} \\
+    \hline
+    Gaussian Naive Bayes & \texttt{var\_smoothing} = $10^{-5}$ \\
+    \hline
+    Dummy (Zero-R) & stratified strategy \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth,keepaspectratio]{ch05/validation_curves}
+  \caption{Validation curves: KNN as a function of $k$ (left), decision tree as a function of depth (centre), SVM with RBF kernel as a function of $C$ and $\gamma$ (right)}
+  \label{fig:validation-curves}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{KNN: study of $k$, the weighting and the distance.} With \emph{distance} weighting, the macro-F1 is stable for every $k$ between 5 and 51 (0.848). With \emph{uniform} weighting (simple majority vote), it collapses to 0.748 as soon as $k \geq 21$: a \texttt{reset-both} flow has very few \texttt{reset-both} neighbours, so with 21 equal votes it is always outvoted by \texttt{deny} and the class is never predicted. Distance weighting gives the nearest, often identical, flows a decisive weight. Manhattan and Euclidean distances give the same score except for $k = 5$ with uniform weights (0.848 against 0.835).
+  \item \textbf{Decision tree: criterion and pruning.} The Gini criterion is slightly better than entropy (0.8478 against 0.8464). A maximum depth of 10 is not quite sufficient (0.846); from depth 20 onwards the score no longer changes, because the tree stops growing before reaching the limit (the fitted tree has depth 14 and 37 leaves). Cost-complexity pruning ($\alpha = 10^{-4}$) brings no gain.
+  \item \textbf{SVM: kernel study.} The RBF kernel is best (0.842), ahead of the polynomial (0.836) and linear (0.836) kernels, which shows that the classes are not linearly separable in the encoded space. A small $\gamma$ combined with a small $C$ underfits (0.747 for $\gamma = 0.01$, $C = 1$); the optimum lies inside the explored grid.
+  \item \textbf{Class weighting.} For both tree models, \texttt{class\_weight="balanced"} \emph{reduces} the macro-F1 from 0.848 to about 0.747, because it creates many false \texttt{reset-both} predictions (Section~\ref{sec:rare-class-leakage}).
+  \item \textbf{Naive Bayes.} The variance smoothing has almost no effect (0.7074 to 0.7076 over six orders of magnitude); the best value lies at the edge of the grid, but given this flatness, a wider grid would not change the conclusion.
+\end{itemize}
+
 \section{Test Set Results}\label{sec:test-set-results}
 
 After model selection and hyperparameter tuning, the selected Decision Tree pipeline was evaluated on the held-out test set containing 11,434 records. This partition was not used to select the classifier or tune its hyperparameters. Table~\ref{tab:test-comparison} compares the final test performance of all six evaluated classifiers.
@@ -208,6 +251,30 @@ The feature-availability analysis identifies a temporal limitation. Source and d
 The exploratory analysis also reports a strong association between NAT source-port status and the firewall action (Cram\'er's $V=0.983$). Such an association warrants scrutiny because NAT-related values may be assigned as a consequence of a firewall decision. Nevertheless, the ablation experiment shows that removing both NAT port fields changes cross-validation macro-F1 by only about 0.00016. The association is therefore not evidence, on its own, that NAT ports are responsible for the model's high predictive score. A definitive causal assessment would require a dataset with clearly documented feature timestamps and a prediction point fixed before the firewall action.
 
 A further check considers repeated feature vectors created when columns are removed. In the full feature set, the overlap audit reports no identical feature vectors between the training and validation portions of any fold. After removing NAT fields, approximately 5.7\% to 6.2\% of validation rows have a feature vector also present in the corresponding training fold; for the ports-only representation, the overlap rises to approximately 37\% to 39\%. This occurs because distinct original records can become identical after projection onto a smaller set of features. A stricter group-aware evaluation of these reduced representations gives macro-F1 values of 0.84848 without NAT fields and 0.68667 for ports only. These values remain close to the corresponding ablation results, suggesting that the reported feature-removal conclusions are not explained solely by the projected-vector overlap.
+
+\section{Interpretation of the Selected Model}\label{sec:interpretation}
+
+\subsection{Feature importance}
+Permutation importance~\cite{breiman2001random} measures how much the test macro-F1 decreases when the values of one attribute are randomly shuffled, which breaks its link with the target (Figure~\ref{fig:importance}). It is computed on the eleven original attributes rather than on the 80 encoded columns, and on data not used for training.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\linewidth,keepaspectratio]{ch05/permutation_importance}
+  \caption{Permutation importance of the eleven attributes for the selected decision tree (test set)}
+  \label{fig:importance}
+\end{figure}
+
+Two attributes dominate: \textbf{Elapsed Time} (a decrease of 0.34 in macro-F1) and \textbf{Destination Port} (0.32). They are followed by NAT Destination Port (0.045), Packets (0.023) and Bytes Sent (0.020). Six attributes have zero importance: the tree does not use them, which is consistent with the strong Spearman correlations found in Chapter~\ref{chap:donnees}. The two dominant attributes are also those with the largest effect sizes in the statistical tests (Elapsed Time: $\varepsilon^2 = 0.70$; destination port: $V = 0.72$).
+
+\subsection{Decision rules}
+Figure~\ref{fig:tree} shows the first three levels of the tree. The root separates flows by their duration, and long flows are allowed. Among short flows, destination port 445 leads to \texttt{drop} and port 22 to \texttt{deny}, while port 3389 (remote desktop) leads to a \texttt{reset-both} leaf. These rules can be read and checked by a network administrator, which is the main reason for selecting this model. The rules up to depth 3 are exported in \texttt{reports/decision\_tree\_rules\_depth3.txt}; numerical thresholds are expressed on the standardised $\log(1+x)$ scale used by the pipeline.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth,keepaspectratio]{ch05/decision_tree_top3}
+  \caption{First three levels of the selected decision tree}
+  \label{fig:tree}
+\end{figure}
 
 \section{Discussion}\label{sec:results-discussion}
 

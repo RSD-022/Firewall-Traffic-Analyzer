@@ -95,7 +95,7 @@ Members are identified by their student codes only.
 | **RSD-022** | Team leader — data preparation, EDA and statistics | Coordination, data cleaning, EDA, statistical tests, preprocessing pipeline, final tuning benchmark and model export |
 | **RSD-020** | Machine learning | Model training and evaluation, first benchmark, ablations and rare-class experiments |
 | **RSD-009** | Streamlit application | Dashboard architecture, visualisations, prediction pages, model integration, automated tests |
-| **RSD-002** | Documentation | README, application guide, Markdown documentation, report |
+| **RSD-002** | Documentation | README, application guide, report |
 
 **Contribution matrix** (● main author, ○ contributor):
 
@@ -107,7 +107,7 @@ Members are identified by their student codes only.
 | Full tuning and final model (`notebooks/05`, `06`, `models/`) | ● | | | |
 | Streamlit application (`src/app.py`, `visualization.py`, `theme.py`, `inference.py`) | | ○ | ● | |
 | Automated tests (`tests/`) | ○ | ○ | ● | |
-| Documentation (`README*.md`, `docs/md/`) | ○ | | ○ | ● |
+| Documentation (`README*.md`) | ○ | | ○ | ● |
 | Report (`docs/latex/`, `docs/Rapport_MiniProject.pdf`) | ● | ○ | ○ | ● |
 
 The full per-member history is visible with `git shortlog -sn --no-merges` and in the merged pull requests.
@@ -156,7 +156,7 @@ Main analysis on the 57,170 unique flows (duplicates would violate the independe
 - Random Forest, KNN and Decision Tree are statistically tied on macro-F1. Following the selection rule fixed before looking at the test set (*among statistically tied models, keep the simplest and fastest*), the **Decision Tree** is deployed: it can be read as firewall-like rules, predicts ~80× faster than the Random Forest, and its scores separate the classes much better than KNN's (ROC-AUC 0.998 vs 0.931).
 - The three large classes are almost perfectly classified (F1 ≥ 0.995). The limit is **`reset-both`**: 10 of its 11 test flows are predicted as `deny`, because both actions block the connection and have nearly identical traffic profiles. Only 43 training examples exist. Naive Bayes recalls all of them but wrongly labels about 31 % of `deny` flows as `reset-both`, a trade-off that is discussed in the report.
 - The most important inputs (permutation importance on the test set) are **Elapsed Time** and **Destination Port**, followed by NAT Destination Port, Packets and Bytes Sent. The first split of the tree separates flows by duration; ports 445, 3389, 22 and 53 then route flows to `drop`, `reset-both`, `deny` and `allow` branches.
-- **Limitations:** NAT ports and elapsed time may only be known after the firewall's decision (feature-availability analysis in `docs/md/feature_availability.md`); the data come from a single network; historical labels reflect one firewall policy, not ground truth.
+- **Limitations:** NAT ports and elapsed time may only be known after the firewall's decision (feature-availability analysis in `notebooks/03_model_training_evaluation.ipynb` and `reports/feature_availability.csv`); the data come from a single network; historical labels reflect one firewall policy, not ground truth.
 
 ---
 
@@ -195,5 +195,4 @@ Main analysis on the 57,170 unique flows (duplicates would violate the independe
 
 - **Academic report:** [docs/Rapport_MiniProject.pdf](docs/Rapport_MiniProject.pdf)
 - **Application user guide:** [README_APP_SETUP_USAGE.md](README_APP_SETUP_USAGE.md)
-- **Technical documentation:** [docs/md/](docs/md/)
 - **Notebooks:** [notebooks/](notebooks/)
