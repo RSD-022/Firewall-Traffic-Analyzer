@@ -593,6 +593,23 @@ In this project, Spearman's correlation is applied to the numerical traffic feat
 
 Because several pairwise correlations are examined, the resulting p-values are adjusted using the Benjamini--Hochberg procedure to control the false discovery rate. Spearman's original formulation provides the theoretical basis for this analysis~\cite{spearman1904proof}.
 
+\subsection{Normality and Equal-Variance Tests}
+Parametric tests such as the one-way analysis of variance (ANOVA) assume that the variable is normally distributed within each group and that the group variances are equal. These assumptions are checked before choosing a test. The Shapiro--Wilk test~\cite{shapiro1965analysis} tests $H_0$: the sample comes from a normal distribution; its statistic $W$ compares the ordered sample with the values expected under normality and is reliable up to about \num{5000} observations. The D'Agostino--Pearson $K^2$ test~\cite{dagostino1973tests} combines the skewness and kurtosis of the sample and is suited to large samples. The Brown--Forsythe test~\cite{brown1974robust}, a version of Levene's test centred on the median, tests $H_0$: all groups have the same variance, and remains valid when the data are not normal. When these assumptions are rejected, rank-based (non-parametric) tests such as Kruskal--Wallis are used instead of ANOVA.
+
+\subsection{Dunn's Post-Hoc Test and Effect Sizes}
+A significant Kruskal--Wallis test only shows that at least one group differs. Dunn's test~\cite{dunn1964multiple} compares each pair of groups $(a, b)$ using the mean ranks $\bar{R}_a$ and $\bar{R}_b$ computed on the joint ranking:
+\begin{equation}
+  z_{ab} = \frac{\bar{R}_a - \bar{R}_b}{\sqrt{\left(\frac{N(N+1)}{12} - T\right)\left(\frac{1}{n_a} + \frac{1}{n_b}\right)}}
+  \label{eq:dunn}
+\end{equation}
+where $T$ is a correction for tied values. Because several pairs are compared, the p-values are adjusted with Holm's method~\cite{holm1979simple}. The size of each difference is measured with Cliff's $\delta$~\cite{cliff1993dominance}, the probability that a value of group $a$ exceeds a value of group $b$ minus the reverse probability; $|\delta| < 0.147$ is negligible, $< 0.33$ small, $< 0.474$ medium and larger values are large. Effect sizes are essential with large samples, where even negligible differences become statistically significant.
+
+\subsection{Statistical Comparison of Classifiers}
+The Friedman test~\cite{friedman1937use} compares $k \geq 3$ classifiers evaluated on the same cross-validation folds. Within each fold, the classifiers are ranked by their score; under $H_0$ (all classifiers perform equally), their mean ranks should be similar. It is the non-parametric alternative to repeated-measures ANOVA and does not assume normal fold scores. McNemar's test~\cite{mcnemar1947note} compares two classifiers on the same test set. Only the discordant observations are used: $n_{01}$, the cases correctly classified by the first model only, and $n_{10}$, those correctly classified by the second only. Under $H_0$ (both models have the same error rate), $n_{01}$ follows a binomial distribution with parameters $n_{01} + n_{10}$ and $1/2$, which gives an exact p-value.
+
+\subsection{Multiple Testing}
+When many hypotheses are tested, some are rejected by chance. The Holm procedure controls the probability of at least one false rejection, while the Benjamini--Hochberg procedure~\cite{benjamini1995controlling} controls the expected proportion of false discoveries and is less conservative when many tests are performed.
+
 \section{Class Imbalance, Duplicates, and Data Leakage}
 
 Reliable classification depends not only on the choice of algorithm but also on the quality and structure of the training data. Three issues are particularly relevant to firewall traffic classification: class imbalance, duplicated observations, and data leakage. If these issues are not addressed, a model may appear to perform well during evaluation without learning patterns that generalise reliably to unseen observations.

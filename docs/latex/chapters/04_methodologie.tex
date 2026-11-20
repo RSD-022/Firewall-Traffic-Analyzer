@@ -30,7 +30,7 @@ This choice matters because several attributes are only known \emph{after} the f
   \end{tabular}
 \end{table}
 
-Because the tool works on completed logs, all eleven attributes are available at prediction time and the \textbf{full feature set is used}. The ablation experiments show that this choice does not hide a leakage problem: removing the \ac{NAT} fields, the totals or the duration changes the cross-validated macro-F1 by less than 0.002. The model therefore does not depend on any single suspicious attribute. Conversely, the ports alone are not enough (macro-F1 0.687), which shows that the traffic measurements carry real information. This analysis is documented in \texttt{docs/md/feature\_availability.md}.
+Because the tool works on completed logs, all eleven attributes are available at prediction time and the \textbf{full feature set is used}. The ablation experiments show that this choice does not hide a leakage problem: removing the \ac{NAT} fields, the totals or the duration changes the cross-validated macro-F1 by less than 0.002. The model therefore does not depend on any single suspicious attribute. Conversely, the ports alone are not enough (macro-F1 0.687), which shows that the traffic measurements carry real information. This analysis is documented in notebook 03 and in \texttt{reports/feature\_availability.csv}.
 
 \section{Preprocessing}\label{sec:preprocessing}
 \subsection{Deduplication}
