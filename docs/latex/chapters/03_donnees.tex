@@ -4,7 +4,7 @@
 A classifier can only be as reliable as the data it learns from. Before any model is trained, this chapter describes the firewall log used in the project, audits its quality, and explores how the traffic features relate to the action taken by the firewall. The exploration has two goals: to understand the structure of the problem (which features separate the actions, which ones are redundant), and to identify the risks that the experimental protocol of Chapter~\ref{chap:methodologie} must control, in particular class imbalance, duplicated records and possible target leakage. The descriptive results come from \texttt{notebooks/01\_eda\_and\_cleaning.ipynb}; the statistical tests come from \texttt{notebooks/07\_statistical\_tests.ipynb}.
 
 \section{Dataset Source and Description}
-The data set is the \emph{Internet Firewall Data} published in the \ac{UCI} Machine Learning Repository (data set \#542)~\cite{dua2019uci}. It contains \textbf{65\,532 records} logged by the firewall of a single organisation. Each record describes one network flow by \textbf{eleven numerical attributes} and the \textbf{action} that the firewall applied to it, which is the target variable. Table~\ref{tab:attributs} describes the twelve columns. The file \texttt{data/raw/log2.csv} (2.9~MB) contains no missing value.
+The data set is the \emph{Internet Firewall Data} published in the \ac{UCI} Machine Learning Repository (data set \#542)~\cite{dua2019uci}. It contains \textbf{\num{65532} records} logged by the firewall of a single organisation. Each record describes one network flow by \textbf{eleven numerical attributes} and the \textbf{action} that the firewall applied to it, which is the target variable. Table~\ref{tab:attributs} describes the twelve columns. The file \texttt{data/raw/log2.csv} (2.9~MB) contains no missing value.
 
 \begin{table}[htbp]
   \centering
@@ -15,14 +15,14 @@ The data set is the \emph{Internet Firewall Data} published in the \ac{UCI} Mach
     \hline
     \textbf{Attribute} & \textbf{Meaning} & \textbf{Nature} & \textbf{Distinct values} \\
     \hline
-    Source Port & Port of the client that opened the flow & identifier & 22\,724 \\
-    Destination Port & Port of the requested service (e.g.\ 53 = DNS, 443 = HTTPS) & identifier & 3\,273 \\
-    NAT Source Port & Source port after \ac{NAT} (0 = no translation) & identifier & 29\,152 \\
-    NAT Destination Port & Destination port after \ac{NAT} & identifier & 2\,533 \\
-    Bytes & Total bytes exchanged & count & 10\,724 \\
-    Bytes Sent & Bytes sent by the source & count & 6\,683 \\
-    Bytes Received & Bytes received by the source & count & 8\,814 \\
-    Packets & Total packets exchanged & count & 1\,116 \\
+    Source Port & Port of the client that opened the flow & identifier & \num{22724} \\
+    Destination Port & Port of the requested service (e.g.\ 53 = DNS, 443 = HTTPS) & identifier & \num{3273} \\
+    NAT Source Port & Source port after \ac{NAT} (0 = no translation) & identifier & \num{29152} \\
+    NAT Destination Port & Destination port after \ac{NAT} & identifier & \num{2533} \\
+    Bytes & Total bytes exchanged & count & \num{10724} \\
+    Bytes Sent & Bytes sent by the source & count & \num{6683} \\
+    Bytes Received & Bytes received by the source & count & \num{8814} \\
+    Packets & Total packets exchanged & count & \num{1116} \\
     Elapsed Time (sec) & Duration of the flow in seconds & duration & 915 \\
     pkts\_sent & Packets sent by the source & count & 749 \\
     pkts\_received & Packets received by the source & count & 922 \\
@@ -48,10 +48,10 @@ Table~\ref{tab:audit} summarises the quality checks performed on the raw file.
     \hline
     \textbf{Check} & \textbf{Result} \\
     \hline
-    Records & 65\,532 \\
+    Records & \num{65532} \\
     Missing values & 0 \\
-    Exact duplicate records (all 12 columns) & 8\,362 (12.76\,\%) \\
-    Unique records after deduplication & 57\,170 \\
+    Exact duplicate records (all 12 columns) & \num{8362} (12.76\,\%) \\
+    Unique records after deduplication & \num{57170} \\
     Feature vectors with two different actions & 9 vectors (46 raw / 18 unique records) \\
     Identity $\text{Bytes} = \text{Bytes Sent} + \text{Bytes Received}$ & true for 100\,\% of records \\
     Identity $\text{Packets} = \text{pkts\_sent} + \text{pkts\_received}$ & true for 100\,\% of records \\

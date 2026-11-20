@@ -51,11 +51,11 @@ The Zero-R classifier is one of the simplest classification approaches. It ignor
     \hat{y}_{\text{Zero-R}}
     =
     \underset{c \in \mathcal{Y}}{\arg\max}
-    \sum_{i=1}^{N}\mathbb{1}(y_i=c)
+    \sum_{i=1}^{N}\mathbbm{1}(y_i=c)
     \label{eq:zero-r}
 \end{equation}
 
-where $\mathcal{Y}$ denotes the set of possible classes, $y_i$ represents the actual class of observation $i$, and $\mathbb{1}(\cdot)$ is an indicator function that returns one when its condition is true and zero otherwise.
+where $\mathcal{Y}$ denotes the set of possible classes, $y_i$ represents the actual class of observation $i$, and $\mathbbm{1}(\cdot)$ is an indicator function that returns one when its condition is true and zero otherwise.
 
 Consequently, every observation receives the same predicted label, regardless of its characteristics. This makes Zero-R computationally inexpensive and easy to interpret. However, it does not learn relationships between input features and target classes, and its predictions are strongly influenced by the distribution of the target variable.
 
@@ -102,7 +102,7 @@ Once the $K$ nearest neighbors have been identified, the predicted class can be 
     =
     \underset{c \in \mathcal{Y}}{\arg\max}
     \sum_{i \in \mathcal{N}_K(x)}
-    \mathbb{1}(y_i=c)
+    \mathbbm{1}(y_i=c)
     \label{eq:knn-uniform}
 \end{equation}
 
@@ -114,7 +114,7 @@ KNN also supports distance-weighted voting, in which closer neighbors contribute
     S(c \mid x)
     =
     \sum_{i \in \mathcal{N}_K(x)}
-    w_i \mathbb{1}(y_i=c)
+    w_i \mathbbm{1}(y_i=c)
     \label{eq:knn-weighted}
 \end{equation}
 
@@ -131,7 +131,7 @@ Feature scaling is particularly important for KNN because its predictions depend
 
 where $x$ is the original feature value, $\mu$ is the training-set mean, and $\sigma$ is the training-set standard deviation.
 
-In this project, the seven numerical traffic measurements first undergo a $\log(1+x)$ transformation to reduce skewness, followed by standardization. The four port attributes are treated as categorical identifiers and transformed using one-hot encoding. This produces a feature representation containing 80 columns, combining seven standardized numerical features and 73 binary categorical features. These transformations are fitted using training data only to avoid information leakage during evaluation.
+In this project, the seven numerical traffic measurements first undergo a $\log(1+x)$ transformation to reduce skewness, followed by standardization. The four port attributes are treated as categorical identifiers and transformed using one-hot encoding. This produces a feature representation containing 80 columns, combining seven standardized numerical features and \num{73} binary categorical features. These transformations are fitted using training data only to avoid information leakage during evaluation.
 
 The KNN model is selected because it provides a straightforward, non-parametric approach to classification and can capture local relationships between traffic observations without assuming a predefined functional form. Its main limitations include computationally expensive prediction when the training dataset is large, sensitivity to feature representation and scaling, and potential degradation in high-dimensional spaces.
 
@@ -214,11 +214,11 @@ For classification, each tree produces a predicted class, and the Random Forest 
     =
     \underset{c \in \mathcal{Y}}{\arg\max}
     \sum_{b=1}^{B}
-    \mathbb{1}(T_b(x)=c)
+    \mathbbm{1}(T_b(x)=c)
     \label{eq:random-forest-voting}
 \end{equation}
 
-where $B$ represents the number of trees, $T_b(x)$ is the prediction produced by tree $b$ for observation $x$, and $\mathbb{1}(\cdot)$ is an indicator function.
+where $B$ represents the number of trees, $T_b(x)$ is the prediction produced by tree $b$ for observation $x$, and $\mathbbm{1}(\cdot)$ is an indicator function.
 
 The use of multiple independently randomized trees generally produces a more stable decision boundary than relying on a single tree. This is particularly useful when individual trees are sensitive to variations in the training data.
 
@@ -363,11 +363,11 @@ The following metrics are used to quantify different aspects of classification p
 
 \begin{equation}
 \text{Accuracy} =
-\frac{\sum_{i=1}^{n}\mathbb{1}(\hat{y}_i=y_i)}{n}
+\frac{\sum_{i=1}^{n}\mathbbm{1}(\hat{y}_i=y_i)}{n}
 \label{eq:accuracy}
 \end{equation}
 
-where $y_i$ is the actual label, $\hat{y}_i$ is the predicted label, $n$ is the number of observations, and $\mathbb{1}(\cdot)$ is an indicator function equal to one when its condition is true. Although intuitive, accuracy can be misleading when the class distribution is highly imbalanced.
+where $y_i$ is the actual label, $\hat{y}_i$ is the predicted label, $n$ is the number of observations, and $\mathbbm{1}(\cdot)$ is an indicator function equal to one when its condition is true. Although intuitive, accuracy can be misleading when the class distribution is highly imbalanced.
 
 \textbf{Precision.} Precision measures the proportion of predictions for a class that are correct:
 
@@ -459,7 +459,7 @@ However, ordinary stratification does not prevent identical feature vectors from
 
 The project uses \texttt{StratifiedGroupKFold}, which combines approximate class stratification with group separation. Each distinct feature vector defines a group, ensuring that identical input vectors are not shared between training and validation subsets.
 
-After removing the 8,362 exact duplicate records, the dataset contains 57,170 unique records. It is divided into five grouped folds using random seed 42. One fold, representing approximately 20\% of the observations, is reserved as the final test set, while the remaining four folds form the training set. The resulting partitions contain 11,434 test observations and 45,736 training observations.
+After removing the \num{8362} exact duplicate records, the dataset contains \num{57170} unique records. It is divided into five grouped folds using random seed 42. One fold, representing approximately 20\% of the observations, is reserved as the final test set, while the remaining four folds form the training set. The resulting partitions contain \num{11434} test observations and \num{45736} training observations.
 
 Within the training set, the same five-fold group-aware strategy is used for model selection and hyperparameter tuning. In each iteration, four folds are used to train the model and the remaining fold is used for validation. The grouping constraint ensures that identical feature vectors do not occur in both parts of a fold. This reduces the risk of overly optimistic validation scores caused by repeated observations.
 
@@ -609,7 +609,7 @@ Accuracy alone is therefore insufficient to assess model quality. A classifier t
 
 Duplicate observations are records that contain identical values. In classification datasets, repeated records can unintentionally increase the influence of particular patterns during training. More importantly, if identical observations are distributed between training and test sets, the model may be evaluated on feature vectors that it has already encountered.
 
-The original firewall dataset contains 8,362 exact duplicate records, representing approximately 12.76\% of the observations. These records are removed before the train-test split to prevent repeated observations from artificially influencing the evaluation.
+The original firewall dataset contains \num{8362} exact duplicate records, representing approximately 12.76\% of the observations. These records are removed before the train-test split to prevent repeated observations from artificially influencing the evaluation.
 
 A related issue concerns conflicting labels. This occurs when two or more records have identical input features but different target labels. In such cases, the same feature vector corresponds to multiple observed firewall actions. The classifier cannot distinguish these records using the available features alone, which introduces ambiguity into the learning problem.
 

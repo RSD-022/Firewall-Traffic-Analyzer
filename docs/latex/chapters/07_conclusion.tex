@@ -3,13 +3,87 @@
 \markboth{General Conclusion and Future Work}{}
 
 \section*{Summary of the Work}
-% Recall the objectives, then summarize what was achieved using VERIFIED key figures.
-\TODO{Summary of the work}
+This project aimed to investigate the application of Machine Learning techniques to firewall log analysis through the development of the *Intelligent Firewall Traffic Analyzer*. The main objective was to study the ability of supervised classification algorithms to predict firewall actions from network traffic attributes and to provide an analytical tool for exploring and interpreting these predictions.
+
+The experimental study was conducted using the Internet Firewall Data dataset from the UCI Machine Learning Repository, which contains records associated with four firewall actions: \texttt{allow}, \texttt{deny}, \texttt{drop}, and \texttt{reset-both}. The work began with an exploratory analysis of the dataset to examine its structure, distributions, class imbalance, duplicate records, and relationships between the input attributes and the target variable. This preliminary investigation helped establish the characteristics of the data and identify potential challenges that could affect the reliability of the classification results.
+
+A data preparation and evaluation methodology was subsequently established. Duplicate records were removed, and the dataset was divided into training and testing subsets. To reduce the risk of overly optimistic evaluation caused by related records appearing in different subsets, group-aware validation strategies were employed. The experiments also incorporated preprocessing techniques adapted to the different types of features, together with hyperparameter optimization and statistical analysis.
+
+Six classification approaches were evaluated: Dummy Classifier, K-Nearest Neighbors (KNN), Decision Tree, Random Forest, Gaussian Naive Bayes, and Support Vector Machine (SVM). Their performance was compared using multiple evaluation metrics, including accuracy, precision, recall, F1-score, macro-F1, balanced accuracy, and confusion matrices. Macro-F1 was considered the principal evaluation metric because it provides a more balanced assessment of performance across the four classes, particularly in the presence of severe class imbalance.
+
+The cross-validation experiments showed that Random Forest, KNN, and Decision Tree achieved very similar macro-F1 scores, with values of approximately 0.848. Consequently, the differences between these models were negligible in terms of the observed predictive performance. The Decision Tree was ultimately selected as the final classifier, mainly because of its interpretability and relatively low computational cost, rather than because it demonstrated a statistically significant superiority over the other leading models.
+
+The final evaluation confirmed that the selected classifier achieved an accuracy of 99.85\% and a weighted-F1 score of 99.81\%. However, its macro-F1 score was 79.00\%, while its balanced accuracy reached 77.16\%. The analysis of the confusion matrix revealed that the classifier performed very well on the dominant classes but had considerable difficulty identifying the minority \texttt{reset-both} class. Only one of the eleven test instances belonging to this class was correctly classified. This finding demonstrated the importance of considering class-specific performance rather than relying exclusively on aggregate metrics.
+
+Additional experiments investigated feature relevance, the influence of selected attributes, and the potential impact of information associated with completed network flows. These analyses highlighted the importance of understanding the relationship between the available features and the firewall action being predicted, particularly when evaluating whether a model could be used for prediction before a firewall decision is made.
+
+Finally, the analytical pipeline was integrated into an interactive application, providing a practical interface through which the developed classification approach can be used and explored. The project therefore combines data analysis, statistical investigation, model development, evaluation, and application implementation into a single workflow.
+
+Overall, the project demonstrated that Machine Learning can effectively reproduce firewall action patterns from historical traffic records. It also showed that high aggregate classification performance does not necessarily translate into equally reliable predictions for every class, emphasizing the importance of rigorous evaluation and careful interpretation in network security applications.
+
+
+
+
 
 \section*{Limitations}
-% Only one firewall, extremely rare class, risk of data leakage, retrospective scope.
-\TODO{Honest discussion of the limitations}
+Despite the encouraging results obtained during the experiments, several limitations must be considered when interpreting the findings and assessing the applicability of the developed system.
+
+First, the study relies on a single publicly available dataset collected from a specific university network environment. Consequently, the learned patterns may reflect the characteristics of this particular infrastructure, its traffic distribution, and its firewall configuration. The performance obtained during evaluation cannot therefore be assumed to generalize to other networks, organizations, or more recent traffic conditions.
+
+Second, the dataset presents a severe class imbalance, particularly for the \texttt{reset-both} category. Although the selected classifier achieves excellent accuracy on the dominant classes, its ability to recognize the minority class remains limited. The test results illustrate this issue clearly, as only one out of eleven \texttt{reset-both} instances was correctly classified. This limitation makes the model unsuitable for applications requiring reliable identification of all firewall actions without further improvement.
+
+Third, the availability of only a small number of minority-class examples limits the conclusions that can be drawn regarding the model's performance on \texttt{reset-both}. Even when evaluation procedures are carefully designed, a very small number of test observations provides limited evidence of how the classifier would behave on unseen examples of this category.
+
+Another important limitation concerns the temporal availability of the input features. Some attributes describe completed network flows and may contain information recorded after the firewall has already applied its action. Their use can therefore make the prediction task easier while limiting its applicability to real-time decision-making. Although the experiments investigated feature relevance and the effect of removing selected attributes, the available dataset does not provide sufficient temporal information to establish definitively when every feature becomes available relative to the firewall decision. The model should consequently be interpreted primarily as a tool for retrospective firewall log analysis rather than as a system capable of replacing an operational firewall decision mechanism.
+
+Furthermore, the strong relationships observed between certain attributes and the target variable raise the possibility that the model may rely on information closely associated with the recorded firewall action. Such relationships are useful for reproducing historical patterns but do not necessarily indicate that the model has learned general network behaviour that would remain valid under different firewall policies or configurations.
+
+Finally, the application operates within an offline analytical framework. It does not directly capture live network traffic, enforce firewall policies, modify access-control rules, or guarantee the security of network connections. Its predictions are derived from the patterns learned from historical data and should therefore be regarded as analytical estimates rather than authoritative security decisions.
+
+These limitations do not invalidate the experimental results, but they define the scope within which the results should be interpreted and highlight the improvements required before considering broader practical deployment.
+
+
+
+
+
+
+
+
+
 
 \section*{Future Work}
-% Prediction before the firewall decision, additional datasets, probability calibration.
-\TODO{Future directions}
+ Several directions can be explored to improve the predictive performance, reliability, and practical applicability of the Intelligent Firewall Traffic Analyzer.
+
+A first direction concerns the improvement of minority-class classification. The difficulty of recognizing \texttt{reset-both} represents one of the most important weaknesses identified during the experiments. Future work could investigate alternative class-balancing strategies, cost-sensitive learning, class-weight optimization, and carefully designed resampling techniques. Additional data containing representative examples of minority firewall actions would also be particularly valuable. These approaches should be evaluated using class-specific precision, recall, and F1-score to ensure that improvements in minority-class recognition do not come at the expense of excessive misclassification of other categories.
+
+A second direction involves investigating alternative classification algorithms and optimization strategies. Although the evaluated models achieved similar cross-validation results, further experiments could explore different model configurations, decision thresholds, ensemble strategies, and specialized classifiers. The objective would not necessarily be to maximize overall accuracy, but rather to obtain a more balanced and reliable classification performance across all firewall actions.
+
+Feature analysis could also be extended by investigating the availability and relevance of attributes at different stages of a network connection. Developing a prediction scenario based exclusively on information available before or at the time of the firewall decision would provide a more realistic assessment of the model's potential for proactive use. This would require a clearly defined prediction point and a dataset containing sufficient information about the temporal origin of its features. Such an approach would also help distinguish retrospective classification from genuine prediction before the firewall action is applied.
+
+Another important direction is the validation of the model on additional datasets collected from different network environments. Evaluating the classifier across multiple infrastructures, firewall configurations, and traffic distributions would help determine whether the learned patterns are specific to the original dataset or can generalize to broader network contexts. Such validation would provide stronger evidence regarding the robustness and practical usefulness of the proposed approach.
+
+The application itself could also be extended with additional analytical capabilities. Future versions could provide more detailed explanations of individual predictions, visualize the influence of selected features, facilitate the exploration of misclassified records, and support the comparison of different models. These improvements could make the application more useful for network administrators and researchers seeking to understand firewall behaviour and analyze historical traffic records.
+
+Finally, the system could be extended towards the analysis of continuously collected firewall logs. Such an extension would require additional mechanisms for data ingestion, preprocessing, monitoring, and model updating. Before any integration with operational security infrastructure, however, the classifier would need to undergo further validation, particularly regarding minority-class detection, feature availability, generalization, and the consequences of incorrect predictions.
+
+
+In conclusion, the Intelligent Firewall Traffic Analyzer provides a foundation for exploring the application of Machine Learning to firewall log analysis. The experiments demonstrate the predictive potential of historical firewall data while revealing important challenges related to class imbalance, feature relevance, and generalization. Addressing these challenges through additional data, improved classification strategies, more realistic prediction scenarios, and broader validation could lead to a more robust analytical system and open the way for further research into intelligent firewall traffic analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

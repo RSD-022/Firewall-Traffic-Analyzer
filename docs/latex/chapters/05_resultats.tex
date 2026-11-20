@@ -2,9 +2,9 @@
 
 \section{Introduction}\label{sec:results-introduction}
 
-This chapter presents the experimental evaluation of the proposed firewall-traffic classification system. The objective is to determine whether the selected machine-learning models can predict the action recorded for a network flow and to assess how reliably they perform across the four target classes: \texttt{allow}, \texttt{deny}, \texttt{drop} and \texttt{reset-both}. The experiments follow the protocol defined in Chapter~\ref{chap:methodologie}: model selection is carried out using five-fold group-aware cross-validation on the training partition, while the held-out test partition is reserved for the final evaluation.
+This chapter presents the experimental evaluation of the proposed firewall-traffic classification system. The objective is to determine whether the selected machine-learning models can predict the action recorded for a network flow and to assess how reliably they perform across the four target classes: \texttt{allow}, \texttt{deny}, \texttt{drop} and \texttt{reset-both}. The experiments follow the protocol defined in Chapter~\ref{chap:methodologie}: model selection is carried out using five-fold group-aware cross-validation on the training set, while the held-out test set is reserved for the final evaluation.
 
-The analysis is not limited to global accuracy. Since the dataset is strongly imbalanced, particular attention is paid to macro-averaged metrics, class-wise recall, confusion matrices and the precision--recall behaviour of the rare \texttt{reset-both} class. Additional experiments examine the effect of removing potentially problematic or redundant features. The chapter concludes by discussing what the results demonstrate, the limits of their interpretation and the conditions required before considering deployment in another network environment.
+The analysis gives particular attention to macro-averaged metrics because of the severe class imbalance. The cross-validation macro-F1 is reported as the principal model-selection result, while the held-out test metrics provide a final evaluation. Class-wise recall, confusion matrices and precision--recall behaviour are also examined, especially for the rare \texttt{reset-both} class, whose test support is only eleven records. Additional experiments examine the effect of removing potentially problematic or redundant features. The chapter concludes by discussing what the results demonstrate, the limits of their interpretation and the conditions required before considering deployment in another network environment.
 
 \section{Experimental Environment}\label{sec:experimental-environment}
 
@@ -27,9 +27,19 @@ The experiments were implemented in Python using the Scikit-learn machine-learni
     \hline
     CPU model and number of cores & i7-8565U - 4 cores / 8 threads \\
     \hline
-    16 GB RAM - iGPU \\
+    Memory and graphics & 16 GB RAM - integrated GPU \\
     \hline
-    Other libraries & NumPy, Pandas, SciPy, Streamlit and Plotly are used by the project; their exact versions are not recorded in the supplied artifacts \\
+    NumPy & 2.5.4 \\
+    \hline
+    pandas & 3.1.0 \\
+    \hline
+    SciPy & 1.18.1 \\
+    \hline
+    joblib & 1.6.0 \\
+    \hline
+    Streamlit & 1.66.1 \\
+    \hline
+    Plotly & 7.1.0 \\
     \hline
     Random seed & 42 \\
     \hline
@@ -38,7 +48,7 @@ The experiments were implemented in Python using the Scikit-learn machine-learni
   \end{tabularx}
 \end{table}
 
-The experiments use the cleaned dataset containing 57,170 records. After the removal of 8,362 exact duplicate rows, the data are divided into 45,736 training records and 11,434 test records. The split is group-aware and stratified, with random state 42. Groups are defined from the eleven input features so that identical feature vectors are not distributed across the training and test partitions. The same principle is applied during cross-validation. The preprocessing transformations are fitted within each training fold, rather than on the complete dataset, in order to avoid information from a validation fold influencing the learned transformations.
+The experiments use the cleaned dataset containing 57,170 records. After the removal of 8,362 exact duplicate rows, the data are divided into 45,736 training records and 11,434 test records. The split is group-aware and stratified, with random state 42. Groups are defined from the eleven input features so that identical feature vectors are not distributed across the training and test sets. The same principle is applied during cross-validation. The preprocessing transformations are fitted within each training fold, rather than on the complete dataset, in order to avoid information from a validation fold influencing the learned transformations.
 
 The final exported classifier is a Decision Tree using the Gini criterion, a maximum depth of 20, a minimum of one sample per leaf, no class weighting and a pruning parameter \texttt{ccp\_alpha} equal to zero. The model-selection metric is macro-F1. These settings correspond to the configuration recorded in \texttt{models/metadata.json}.
 
@@ -50,7 +60,7 @@ Table~\ref{tab:cv-results} reports the mean cross-validation macro-F1 and its st
 
 \begin{table}[htbp]
   \centering
-  \caption{Five-fold group-aware cross-validation results on the training partition}
+  \caption{Five-fold group-aware cross-validation results on the training set}
   \label{tab:cv-results}
   \small
   \begin{tabular}{|l|r|r|r|}
@@ -60,27 +70,30 @@ Table~\ref{tab:cv-results} reports the mean cross-validation macro-F1 and its st
     Random Forest & 0.84793 & 0.03779 & 45.6 \\
     KNN & 0.84782 & 0.03782 & 796.1 \\
     Decision Tree & 0.84781 & 0.03785 & 26.0 \\
-    SVM (RBF)\textsuperscript{a} & 0.84171 & 0.05159 & 5.8 \\
+    SVM (RBF)  \textsuperscript{} & 0.84171 & 0.05159 & 5.8 \\
     Gaussian Naive Bayes & 0.70760 & 0.00557 & 9.6 \\
     Dummy (Zero-R) & 0.25054 & 0.00546 & 12.5 \\
     \hline
   \end{tabular}
-  \tablenote{\textsuperscript{a}The SVM benchmark uses the RBF-kernel SVC configuration. Its tuning run uses a class-stratified subset of 12,043 training records, whereas the other reported searches use the full 45,736-record training partition. Search durations are run-specific and should not be interpreted as hardware-independent benchmarks.}
+  \tablenote{  \textsuperscript{} The SVM benchmark uses the RBF-kernel SVC configuration. Its tuning run uses a class-stratified subset of 12,043 training records, whereas the other reported searches use the full 45,736-record training set. Search durations are specific to these runs and should not be interpreted as hardware-independent benchmarks.}
 \end{table}
 
 The three leading models obtain almost identical cross-validation scores. Random Forest reaches the highest mean macro-F1 (0.84793), followed by KNN (0.84782) and Decision Tree (0.84781). The absolute difference between the best and third-best result is approximately 0.00012, which is negligible in practical terms compared with the variation observed between folds. The standard deviations of these three models are also very similar, at approximately 0.038.
 
 The statistical comparison supports this interpretation. The Friedman test across all six classifiers indicates that their cross-validation performances are not all equivalent ($p=0.0018$). However, when the comparison is restricted to Random Forest, KNN and Decision Tree, the Friedman test gives $p=0.6271$. Therefore, the experiment does not provide evidence of a statistically significant difference among the three leading models. The Decision Tree was consequently retained because it offers a simpler and more interpretable structure, while also requiring substantially less tuning time than KNN in this experiment.
 
-Gaussian Naive Bayes obtains a lower mean macro-F1 of 0.70760, while the Zero-R baseline reaches only 0.25054. The gap between the selected model and the baseline confirms that the learned decision rules exploit useful information in the input features. Nevertheless, cross-validation estimates must not be confused with final test performance: the Decision Tree's cross-validation macro-F1 is 0.84781, whereas its macro-F1 on the independent test partition is 0.79000. The latter is reported in the next section.
+The methodology also specified a McNemar test to compare the selected Decision Tree with the best alternative on the held-out test predictions. The test produced zero discordant observations, meaning that the two classifiers made the same correct and incorrect predictions for every test record. Consequently, the test statistic provides no evidence of a difference between their prediction outcomes ($p=1.000$). This result should be interpreted cautiously . identical predictions on this test set do not establish that the classifiers are equivalent on other datasets or network environments.
+
+
+Gaussian Naive Bayes obtains a lower mean macro-F1 of 0.70760, while the Zero-R baseline reaches only 0.25054. The gap between the selected model and the baseline confirms that the learned decision rules exploit useful information in the input features. Nevertheless, cross-validation estimates must not be confused with final test performance: the Decision Tree's cross-validation macro-F1 is 0.84781, whereas its macro-F1 on the independent test set is 0.79000. The latter is reported in the next section.
 
 \section{Test Set Results}\label{sec:test-set-results}
 
-After model selection and hyperparameter tuning, the selected Decision Tree pipeline was evaluated on the held-out test partition containing 11,434 records. This partition was not used to select the classifier or tune its hyperparameters. Table~\ref{tab:test-comparison} compares the final test performance of all six evaluated classifiers.
+After model selection and hyperparameter tuning, the selected Decision Tree pipeline was evaluated on the held-out test set containing 11,434 records. This partition was not used to select the classifier or tune its hyperparameters. Table~\ref{tab:test-comparison} compares the final test performance of all six evaluated classifiers.
 
 \begin{table}[htbp]
   \centering
-  \caption{Final evaluation on the held-out test partition}
+  \caption{Final evaluation on the held-out test set}
   \label{tab:test-comparison}
   \small
   \begin{tabular}{|l|r|r|r|r|r|}
@@ -90,15 +103,17 @@ After model selection and hyperparameter tuning, the selected Decision Tree pipe
     Random Forest & 0.9985 & 0.7716 & 0.7900 & 0.9981 & 0.9976 \\
     KNN & 0.9984 & 0.7716 & 0.7899 & 0.9981 & 0.9309 \\
     Decision Tree & 0.9985 & 0.7716 & 0.7900 & 0.9981 & 0.9976 \\
-    SVM (SVC) & 0.9983 & 0.7715 & 0.7897 & 0.9979 & 0.9960 \\
+    SVM (RBF) & 0.9983 & 0.7715 & 0.7897 & 0.9979 & 0.9960 \\
     Gaussian Naive Bayes & 0.9502 & 0.9177 & 0.7101 & 0.9689 & 0.9926 \\
     Dummy (Zero-R) & 0.4914 & 0.2497 & 0.2496 & 0.4902 & 0.5040 \\
     \hline
   \end{tabular}
-  \tablenote{ROC-AUC is the macro-averaged one-vs-rest area under the receiver operating characteristic curves. Balanced accuracy is the mean recall across the four classes. Values are taken from \texttt{reports/final\_test\_comparison.csv} and \texttt{models/metrics.json}.}
+  \tablenote{  \textsuperscript{} ROC-AUC is the macro-averaged one-vs-rest area under the receiver operating characteristic curves. Balanced accuracy is the mean recall across the four classes. Values are taken from \texttt{reports/final\_test\_comparison.csv} and \texttt{models/metrics.json}.}
 \end{table}
 
 The selected Decision Tree reaches an accuracy of 99.85\% and a weighted-F1 of 99.81\%. Taken alone, these values might suggest near-perfect classification. However, the balanced accuracy is 77.16\% and macro-F1 is 79.00\%. This difference is explained by the severe class imbalance: the two dominant classes, \texttt{allow} and \texttt{drop}, are classified very accurately, while the rare \texttt{reset-both} class is frequently missed. Macro-F1 gives this rare class the same weight as every other class and therefore exposes a weakness that accuracy and weighted-F1 largely conceal.
+
+Another characteristic of the dataset helps explain the strong performance on the \texttt{drop} class: all 11,635 records labelled \texttt{drop} have destination port 445. This makes the class strongly associated with a single feature in the available dataset. Consequently, the high overall accuracy partly reflects the presence of easily distinguishable class patterns and should not be interpreted as evidence that the model has learned general firewall behaviour across different network environments.
 
 \subsection{Confusion matrix and class-wise performance}
 
@@ -125,6 +140,10 @@ The confusion matrix of the selected Decision Tree is shown in Table~\ref{tab:dt
 
 The classifier correctly identifies all test examples belonging to \texttt{allow} and \texttt{drop}. For \texttt{deny}, it correctly classifies 1,601 of 1,608 records, with seven instances incorrectly assigned to \texttt{drop}. The main weakness concerns \texttt{reset-both}: only one of its eleven test records is correctly identified, while the remaining ten are classified as \texttt{deny}. The corresponding recall is therefore $1/11$, or approximately 9.09\%. Although the precision of the single positive prediction is 100\%, this must not be interpreted as reliable detection: the classifier identifies only a very small fraction of the actual rare-class examples.
 
+The difficulty of identifying the \texttt{reset-both} class is also reported in previous firewall-log classification research. Rahman et al.~\cite{rahman2023firewall} report that their evaluated models achieved zero recall for this class in their test data. This provides a relevant comparison with the present experiment, where the selected Decision Tree correctly identifies only one of the eleven test examples. Although the datasets and experimental settings are not necessarily identical, both results highlight the difficulty of learning this minority class from highly imbalanced firewall logs.
+
+The uncertainty associated with this estimate is substantial because it is based on only eleven test observations. Using the 95\% Wilson score interval, the recall estimate of $1/11$ (9.09\%) has an interval of approximately 1.6\% to 37.7\%. Thus, the observed recall should not be treated as a precise estimate of the model's ability to identify future \texttt{reset-both} traffic. A change in the classification of even one test record would also noticeably affect the reported macro-F1.
+
 Figure~\ref{fig:confusion-matrices} provides the row-normalised confusion matrices for all six classifiers. It confirms that the Decision Tree, Random Forest, KNN and SVM behave similarly on the majority classes and share the same difficulty with \texttt{reset-both}. Gaussian Naive Bayes identifies all eleven rare-class test records, but does so at the cost of assigning a large number of \texttt{deny} records to \texttt{reset-both}. Its rare-class recall is therefore high, but its precision and overall macro-F1 remain limited. This illustrates why recall must be considered together with precision.
 
 \begin{figure}[htbp]
@@ -142,7 +161,7 @@ For \texttt{reset-both}, the average precision is only 0.1848. This low value is
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth,height=1.5\textheight,keepaspectratio]{ch05/roc_pr_curves}
+  \includegraphics[width=\linewidth,keepaspectratio]{ch05/roc_pr_curves}
   \caption{One-vs-rest ROC curves for the four actions and precision--recall curves for \texttt{reset-both}}
   \label{fig:roc-pr-curves}
 \end{figure}
@@ -151,7 +170,7 @@ For \texttt{reset-both}, the average precision is only 0.1848. This low value is
 
 \subsection{Effect of class imbalance}
 
-The cleaned dataset contains only 54 records labelled \texttt{reset-both}, representing approximately 0.094\% of the 57,170 observations. The group-aware split places 43 examples in the training partition and 11 in the test partition. In comparison, the dataset contains 37,439 \texttt{allow}, 8,042 \texttt{deny} and 11,635 \texttt{drop} records. The selected Decision Tree is therefore trained with very limited evidence for the rare class.
+The cleaned dataset contains only 54 records labelled \texttt{reset-both}, representing approximately 0.094\% of the 57,170 observations. The group-aware split places 43 examples in the training set and 11 in the test set. In comparison, the dataset contains 37,439 \texttt{allow}, 8,042 \texttt{deny} and 11,635 \texttt{drop} records. The selected Decision Tree is therefore trained with very limited evidence for the rare class.
 
 The test results show the practical consequence of this imbalance: ten of the eleven \texttt{reset-both} records are predicted as \texttt{deny}. A supplementary class-weight experiment demonstrates that increasing the weight of the rare class can raise its recall, but it also produces a large number of false positives. For example, the balanced Decision Tree configuration reaches a rare-class recall of 0.907, but its precision falls to approximately 0.038 and it generates 997 false-positive predictions in the reported comparison. Its pooled macro-F1 also decreases to approximately 0.745. Thus, class weighting changes the error trade-off but does not automatically solve the underlying lack of representative examples.
 
@@ -173,11 +192,11 @@ A second set of experiments investigates whether the high scores depend on featu
     Full feature set & 11 & 0.84781 & -- \\
     Without redundant totals & 9 & 0.84775 & $-0.00007$ \\
     Without NAT ports & 9 & 0.84765 & $-0.00016$ \\
-    Without elapsed time\textsuperscript{a} & 10 & 0.84625 & $-0.00157$ \\
+    Without elapsed time  \textsuperscript{}  & 10 & 0.84625 & $-0.00157$ \\
     Ports only & 2 & 0.68680 & $-0.16102$ \\
     \hline
   \end{tabular}
-  \tablenote{\textsuperscript{a}The experiment without elapsed time is part of the expanded ablation results. Differences are calculated relative to the full-feature cross-validation score of 0.84781. The ports-only experiment uses only source and destination ports.}
+  \tablenote{  \textsuperscript{} The experiment without elapsed time is part of the expanded ablation results. Differences are calculated relative to the full-feature cross-validation score of 0.84781. The ports-only experiment uses only source and destination ports.}
 \end{table}
 
 Removing the total byte and packet measurements, which are redundant with the corresponding sent and received measurements in this dataset, changes macro-F1 by less than 0.0001. Removing the NAT port fields also has a negligible effect on the aggregate score. The experiment without elapsed time reduces macro-F1 by approximately 0.0016. These small differences indicate that the classifier can retain similar aggregate performance when these feature groups are removed, although this does not establish that the remaining variables are available at the beginning of a connection.
@@ -192,22 +211,24 @@ A further check considers repeated feature vectors created when columns are remo
 
 \section{Discussion}\label{sec:results-discussion}
 
-The experiments demonstrate that the firewall action recorded in the dataset can be predicted with high aggregate performance when the model has access to the full set of completed-flow attributes. The Decision Tree, Random Forest and KNN form a leading group with nearly identical cross-validation macro-F1 and final test results. The statistical comparison does not establish a significant difference among these three models. Selecting the Decision Tree is therefore a practical choice based on interpretability and computational efficiency, rather than a claim that it is statistically more accurate than Random Forest or KNN. Its shallow decision structure can also be inspected and explained more easily than the predictions of an ensemble or a distance-based classifier.
+The comparison identifies Random Forest, KNN, and Decision Tree as the leading classifiers. Their cross-validation and test results are very close, and the statistical comparison does not establish a significant difference among them. Retaining the Decision Tree is therefore a practical choice based on interpretability and tuning cost, rather than a claim that it is more accurate than the alternatives. Its decision structure is also easier to inspect than an ensemble or a distance-based classifier.
 
-The difference between accuracy and macro-F1 is one of the most important findings. The test accuracy of 99.85\% is dominated by the majority classes and gives an incomplete picture of the model's behaviour. The macro-F1 of 79.00\%, balanced accuracy of 77.16\% and rare-class recall of 9.09\% provide a more balanced assessment. In particular, the model's failure to retrieve ten of the eleven \texttt{reset-both} examples means that it cannot be considered reliable for this class, despite its excellent overall accuracy. The average precision of 0.1848 reinforces this conclusion.
+The main qualification to the high test accuracy is the weak detection of \texttt{reset-both}. Accuracy and weighted-F1 are dominated by the majority classes, whereas macro-F1, balanced accuracy, and class-wise recall expose the minority-class weakness. Detecting only one of eleven \texttt{reset-both} test records is insufficient to consider the classifier reliable for that action. The small test support also makes the recall estimate sensitive to individual predictions.
 
-The experiments also show that the choice of features determines the meaning of the prediction task. When all eleven attributes are used, the system predicts an action from a completed historical flow record. Several attributes may be measured after the firewall has already applied its action. This is acceptable for retrospective analytics, audit and offline triage, but it does not demonstrate that the model can replace a firewall's policy engine or make a safe decision before a connection is admitted. The ports-only ablation is more consistent with information available at connection initiation, but its lower macro-F1 shows that this restricted task is substantially harder with the current dataset and feature set.
+The feature-ablation results clarify the scope of the prediction task. With all eleven attributes, the model predicts the recorded action from a completed historical flow. Some attributes may only become available after the firewall has acted. This makes the full-feature model more appropriate for retrospective analytics, auditing, and offline triage than for deciding whether to admit a connection. The ports-only experiment is closer to the information available at connection initiation, but its lower macro-F1 indicates that this restricted task is more difficult with the current dataset and feature set.
 
-The results should also be interpreted within the limits of the experimental data. The records originate from a single firewall dataset, and no independent external network dataset is used to assess domain generalisation. Traffic distributions, NAT configuration, firewall rules and network topology may differ in another environment. Consequently, the measured scores cannot be assumed to transfer unchanged to another organisation or firewall platform. In addition, the rare class is represented by only 54 examples in the entire cleaned dataset. Its test recall is estimated from eleven observations, so one additional correct or incorrect prediction would materially change the reported percentage. More representative data are required before drawing strong conclusions about this class.
+The evaluation is limited by the origin and composition of the data. All records come from a single firewall dataset, and no independent external network dataset was used to assess generalisation across environments. Traffic distributions, NAT configurations, firewall rules, and network topologies may differ between organisations and platforms. The measured scores therefore cannot be assumed to transfer unchanged to another environment. In addition, the \texttt{reset-both} class has only 54 records in the cleaned dataset, including eleven in the test set. More representative data are needed before drawing strong conclusions about the model's ability to detect this class.
 
-Finally, reproducibility depends on preserving the software environment used to serialize the fitted pipeline. The project metadata records Scikit-learn 1.9.1. The serialized estimator should therefore be loaded with a compatible version, and the exact dependency versions should be pinned in the deployment environment. The available experiment metadata records the processor architecture as x86\_64 but does not provide the CPU model, RAM capacity or GPU configuration; no stronger hardware claim can be made from the supplied artifacts.
+Reproducibility also depends on preserving a compatible software environment for the serialized pipeline. The project metadata records Scikit-learn 1.9.1. The estimator should therefore be loaded using a compatible version, and dependency versions should be pinned in the deployment environment.
 
-Overall, the system is a useful proof of concept for offline firewall-log classification and exploration. Its strongest contribution is the combination of a reproducible preprocessing pipeline, group-aware validation, comparison of multiple classifiers and an explicit analysis of class imbalance and feature availability. Its principal limitation is not the aggregate classification score, but the gap between retrospective prediction and real-time decision-making, together with the insufficient representation of the \texttt{reset-both} class.
+Overall, the system is a proof of concept for offline firewall-log classification. Its main strengths are the reproducible preprocessing pipeline, group-aware validation, comparison of multiple classifiers, and explicit analysis of class imbalance and feature availability. Its principal limitations are the gap between retrospective prediction and real-time decision-making, and the insufficient representation of the \texttt{reset-both} class.
 
 \section{Conclusion}\label{sec:results-conclusion}
 
-This chapter evaluated six classifiers using five-fold group-aware cross-validation and a separate held-out test partition. Random Forest, KNN and Decision Tree achieved nearly identical cross-validation macro-F1 values, and the statistical comparison did not identify a significant difference among them. The Decision Tree was retained as the final model because it provides a favourable balance between predictive performance, interpretability and computational cost. On the test set, it achieved 99.85\% accuracy, 79.00\% macro-F1 and 0.9976 macro one-vs-rest ROC-AUC.
+This chapter evaluated six classifiers using five-fold group-aware cross-validation and a separate held-out test set. Random Forest, KNN, and Decision Tree achieved nearly identical cross-validation macro-F1 scores, with no statistically significant difference established among them. The Decision Tree was retained as the final model because it offers a practical balance between predictive performance, interpretability, and computational cost. On the test set, it achieved 99.85\% accuracy, 79.00\% macro-F1, and a macro one-vs-rest ROC-AUC of 0.9976.
 
-The class-wise analysis revealed that these global results conceal a serious weakness: only one of the eleven \texttt{reset-both} test records was correctly detected. The ablation experiments further showed that completed-flow measurements contribute to the classification task, while a ports-only representation produces a considerably lower macro-F1. These findings confirm that the system is best understood as an offline analytical tool and that its performance should not be interpreted as evidence of real-time firewall enforcement capability.
+The fitted Decision Tree has an actual depth of 14 and contains 37 leaves. These values are lower than the configured maximum depth of 20, which acts as an upper bound rather than a requirement for the tree to reach that depth. This provides a more concrete indication of the complexity of the final model and supports the choice of a relatively compact, inspectable classifier.
 
-The next chapter presents the application developed around the selected pipeline. It describes how the trained model is integrated into the user interface and how the system supports data exploration, individual predictions and batch analysis, while retaining the limitations identified in this evaluation.
+The class-wise evaluation revealed an important limitation: the selected model correctly identified only one of the eleven \texttt{reset-both} test records. Feature ablation also showed that completed-flow measurements contribute to classification, while a ports-only representation achieves a considerably lower macro-F1. The results therefore support using the system as an offline analytical tool, but do not establish its suitability for real-time firewall enforcement.
+
+The next chapter presents the application built around the selected pipeline. It describes the integration of the trained model into the user interface and the application's support for data exploration, individual predictions, and batch analysis, while taking into account the limitations identified in this evaluation.
