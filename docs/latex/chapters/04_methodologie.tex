@@ -102,7 +102,7 @@ The six classifiers required by the course are compared, all inside the same pip
 Inside the training set, every evaluation uses a 5-fold \texttt{StratifiedGroupKFold} built on the same principle as the train/test split: identical feature vectors never appear in both the training and the validation part of a fold. A check in notebook 03 confirms that 0\,\% of the validation records of each fold have an identical vector in the corresponding training part (\texttt{reports/feature\_overlap\_audit.csv}). With an ordinary K-fold split, duplicated vectors would make validation scores optimistic.
 
 \subsection{Hyperparameter optimisation}
-\textbf{Every model with tunable hyperparameters} is optimised with \texttt{GridSearchCV}, which evaluates every combination of a grid by 5-fold cross-validation and keeps the best one. The grids are given in Table~\ref{tab:grids}; they were chosen to explore the hyperparameters that control the bias--variance trade-off of each model, with ranges wide enough for the optimum to lie inside the grid rather than on its edge. In total, 122 combinations and 610 model fits were evaluated (\texttt{notebooks/05\_full\_tuning\_benchmark.ipynb}).
+\textbf{Every model with tunable hyperparameters} is optimised with \texttt{GridSearchCV}, which evaluates every combination of a grid by 5-fold cross-validation and keeps the best one. The grids are given in Table~\ref{tab:grids}; they were chosen to explore the hyperparameters that control the bias--variance trade-off of each model, with ranges wide enough for the optimum to lie inside the grid rather than on its edge. In total, 120 combinations and 600 model fits were evaluated (\texttt{notebooks/05\_full\_tuning\_benchmark.ipynb}).
 
 \begin{table}[htbp]
   \centering
@@ -113,7 +113,7 @@ Inside the training set, every evaluation uses a 5-fold \texttt{StratifiedGroupK
     \hline
     \textbf{Model} & \textbf{Hyperparameters and values} & \textbf{Combinations} \\
     \hline
-    Zero-R & strategy $\in$ \{most frequent, prior, stratified\} & 3 \\
+    Zero-R & fixed majority-class strategy (\texttt{most\_frequent}), not tuned & 1 \\
     \hline
     \ac{KNN} & $k \in \{5, 11, 21, 31, 41, 51\}$; weights $\in$ \{uniform, distance\}; distance $\in$ \{Manhattan ($p=1$), Euclidean ($p=2$)\} & 24 \\
     \hline

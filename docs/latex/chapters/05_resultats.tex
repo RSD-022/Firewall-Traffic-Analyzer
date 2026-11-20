@@ -72,7 +72,7 @@ Table~\ref{tab:cv-results} reports the mean cross-validation macro-F1 and its st
     Decision Tree & 0.84781 & 0.03785 & 26.0 \\
     SVM (RBF)  \textsuperscript{} & 0.84171 & 0.05159 & 5.8 \\
     Gaussian Naive Bayes & 0.70760 & 0.00557 & 9.6 \\
-    Dummy (Zero-R) & 0.25054 & 0.00546 & 12.5 \\
+    Dummy (Zero-R) & 0.19786 & 0.00001 & 9.5 \\
     \hline
   \end{tabular}
   \tablenote{  \textsuperscript{} The SVM benchmark uses the RBF-kernel SVC configuration. Its tuning run uses a class-stratified subset of 12,043 training records, whereas the other reported searches use the full 45,736-record training set. Search durations are specific to these runs and should not be interpreted as hardware-independent benchmarks.}
@@ -85,7 +85,7 @@ The statistical comparison supports this interpretation. The Friedman test acros
 The methodology also specified a McNemar test to compare the selected Decision Tree with the best alternative on the held-out test predictions. The test produced zero discordant observations, meaning that the two classifiers made the same correct and incorrect predictions for every test record. Consequently, the test statistic provides no evidence of a difference between their prediction outcomes ($p=1.000$). This result should be interpreted cautiously . identical predictions on this test set do not establish that the classifiers are equivalent on other datasets or network environments.
 
 
-Gaussian Naive Bayes obtains a lower mean macro-F1 of 0.70760, while the Zero-R baseline reaches only 0.25054. The gap between the selected model and the baseline confirms that the learned decision rules exploit useful information in the input features. Nevertheless, cross-validation estimates must not be confused with final test performance: the Decision Tree's cross-validation macro-F1 is 0.84781, whereas its macro-F1 on the independent test set is 0.79000. The latter is reported in the next section.
+Gaussian Naive Bayes obtains a lower mean macro-F1 of 0.70760, while the Zero-R baseline, which always predicts the majority class \texttt{allow}, reaches only 0.19786. The gap between the selected model and the baseline confirms that the learned decision rules exploit useful information in the input features. Nevertheless, cross-validation estimates must not be confused with final test performance: the Decision Tree's cross-validation macro-F1 is 0.84781, whereas its macro-F1 on the independent test set is 0.79000. The latter is reported in the next section.
 
 \subsection{Best hyperparameters and hyperparameter study}\label{sec:hyperparameter-study}
 
@@ -110,7 +110,7 @@ Table~\ref{tab:best-params} gives the configuration retained by \texttt{GridSear
     \hline
     Gaussian Naive Bayes & \texttt{var\_smoothing} = $10^{-5}$ \\
     \hline
-    Dummy (Zero-R) & stratified strategy \\
+    Dummy (Zero-R) & majority class (\texttt{most\_frequent}), fixed \\
     \hline
   \end{tabular}
 \end{table}
@@ -148,7 +148,7 @@ After model selection and hyperparameter tuning, the selected Decision Tree pipe
     Decision Tree & 0.9985 & 0.7716 & 0.7900 & 0.9981 & 0.9976 \\
     SVM (RBF) & 0.9983 & 0.7715 & 0.7897 & 0.9979 & 0.9960 \\
     Gaussian Naive Bayes & 0.9502 & 0.9177 & 0.7101 & 0.9689 & 0.9926 \\
-    Dummy (Zero-R) & 0.4914 & 0.2497 & 0.2496 & 0.4902 & 0.5040 \\
+    Dummy (Zero-R) & 0.6549 & 0.2500 & 0.1979 & 0.5183 & 0.5000 \\
     \hline
   \end{tabular}
   \tablenote{  \textsuperscript{} ROC-AUC is the macro-averaged one-vs-rest area under the receiver operating characteristic curves. Balanced accuracy is the mean recall across the four classes. Values are taken from \texttt{reports/final\_test\_comparison.csv} and \texttt{models/metrics.json}.}

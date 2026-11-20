@@ -35,6 +35,6 @@
     "classifier__min_samples_leaf": 1
   },
   "tuning_source": "notebooks/05_full_tuning_benchmark.ipynb",
-  "trained_at_utc": "2026-11-14T16:39:54.163093+00:00",
+  "trained_at_utc": "2026-11-20T19:37:39.526385+00:00",
   "warning": "Historical action prediction; full-feature measurements may be post-decision variables."
 }
