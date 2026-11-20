@@ -133,7 +133,7 @@ CV = mean ± standard deviation of macro-F1 over the 5 folds; test = held-out se
 | KNN | k = 5, Manhattan distance, distance weighting | 0.8478 ± 0.038 | 0.790 | 0.931 | 1 / 11 | 243 |
 | SVM (SVC)¹ | RBF kernel, C = 10, γ = scale | 0.8417 ± 0.052 | 0.790 | 0.996 | 1 / 11 | 13 |
 | Gaussian Naive Bayes | var_smoothing = 1e-5 | 0.7076 ± 0.006 | 0.710 | 0.993 | **11 / 11** | 7.4 |
-| Zero-R (baseline) | stratified | 0.2505 ± 0.006 | 0.250 | 0.497 | 0 / 11 | 7.0 |
+| Zero-R (baseline) | majority class (`most_frequent`), fixed | 0.1979 ± 0.000 | 0.198 | 0.500 | 0 / 11 | 13.0 |
 
 ¹ Kernel SVC was tuned on a stratified sample of 12,043 training rows (≤ 4,000 per class, all `reset-both` rows) because its cost grows about quadratically with the number of rows. Kernel study: RBF 0.842 > polynomial 0.836 ≈ linear 0.836.
 

@@ -469,7 +469,7 @@ Hyperparameters are configuration values selected before or during model trainin
 
 The project uses \texttt{GridSearchCV} to evaluate predefined combinations of hyperparameters through five-fold cross-validation. For each candidate combination, the model is trained and validated across the folds. The mean validation score is then used to identify the best configuration according to the selected metric.
 
-The search explores 122 hyperparameter combinations across the six classifiers, resulting in 610 model fits. The parameter ranges are designed to investigate the main factors controlling model complexity and predictive behaviour. The SVM search is performed on a stratified subset of 12,043 training observations because of the computational cost of non-linear kernels. All 43 training observations belonging to the \emph{reset-both} class are retained in this subset.
+The search explores 120 hyperparameter combinations across the six classifiers, resulting in 600 model fits; the Zero-R baseline is evaluated with its single, fixed majority-class strategy. The parameter ranges are designed to investigate the main factors controlling model complexity and predictive behaviour. The SVM search is performed on a stratified subset of 12,043 training observations because of the computational cost of non-linear kernels. All 43 training observations belonging to the \emph{reset-both} class are retained in this subset.
 
 The primary selection criterion is the mean cross-validated macro-F1-score. This ensures that the tuning process prioritises balanced performance across the four firewall actions rather than optimising performance on the majority class alone.
 
