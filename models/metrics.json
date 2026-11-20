@@ -216,27 +216,27 @@
       ],
       "matrix": [
         [
-          4923,
-          1039,
-          1521,
-          5
-        ],
-        [
-          1075,
-          220,
-          313,
+          7488,
+          0,
+          0,
           0
         ],
         [
-          1541,
-          310,
-          476,
+          1608,
+          0,
+          0,
           0
         ],
         [
-          4,
-          3,
-          4,
+          2327,
+          0,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0,
           0
         ]
       ]
@@ -325,13 +325,13 @@
     },
     {
       "model": "Dummy (Zero-R)",
-      "macro_f1": 0.25054235971092187,
-      "cv_mean": 0.25054235971092187,
-      "cv_std": 0.005457164709023129,
-      "train_macro_f1": 0.2522979777956954,
-      "grid_candidates": 3,
-      "search_time_sec": 12.5,
-      "best_params": "{'strategy': 'stratified'}"
+      "macro_f1": 0.19786092718520737,
+      "cv_mean": 0.19786092718520737,
+      "cv_std": 1.0580254062933274e-05,
+      "train_macro_f1": 0.1978609272364035,
+      "grid_candidates": 1,
+      "search_time_sec": 9.5,
+      "best_params": "{'strategy': 'most_frequent'}"
     }
   ],
   "test": {
@@ -400,14 +400,14 @@
     },
     {
       "model": "Dummy (Zero-R)",
-      "accuracy": 0.4914,
-      "balanced_accuracy": 0.2497,
-      "f1_macro": 0.2496,
-      "f1_weighted": 0.4902,
-      "roc_auc_ovr_macro": 0.504,
+      "accuracy": 0.6549,
+      "balanced_accuracy": 0.25,
+      "f1_macro": 0.1979,
+      "f1_weighted": 0.5183,
+      "roc_auc_ovr_macro": 0.5,
       "pr_auc_reset_both": 0.001,
-      "fit_seconds": 0.09,
-      "ms_per_1000_rows": 1.62
+      "fit_seconds": 0.1132,
+      "ms_per_1000_rows": 2.2887
     }
   ],
   "cv_model_comparison": [
@@ -458,12 +458,12 @@
     },
     {
       "model": "Dummy (Zero-R)",
-      "f1_macro_mean": 0.25054235971092187,
-      "f1_macro_std": 0.005457164709023129,
-      "train_f1_macro_mean": 0.2522979777956954,
-      "n_candidates": 3,
+      "f1_macro_mean": 0.19786092718520737,
+      "f1_macro_std": 1.0580254062933274e-05,
+      "train_f1_macro_mean": 0.1978609272364035,
+      "n_candidates": 1,
       "train_rows": 45736,
-      "seconds": 12.5
+      "seconds": 9.5
     }
   ],
   "cv_feature_ablation": [
