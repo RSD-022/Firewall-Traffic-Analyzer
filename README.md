@@ -169,7 +169,6 @@ Main analysis on the 57,170 unique flows (duplicates would violate the independe
 │   └── processed/                      Group-aware train/test split
 ├── docs/
 │   ├── latex/                          Report LaTeX sources and figures
-│   ├── md/                             Technical documentation (architecture, model card, experiments…)
 │   └── Rapport_MiniProject.pdf         Final academic report
 ├── models/
 │   ├── firewall_pipeline.joblib        Fitted preprocessing + classifier pipeline
