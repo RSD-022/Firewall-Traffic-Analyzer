@@ -67,12 +67,12 @@ Table~\ref{tab:cv-results} reports the mean cross-validation macro-F1 and its st
     \hline
     \textbf{Classifier} & \textbf{Mean macro-F1} & \textbf{Std. dev.} & \textbf{Search time (s)} \\
     \hline
-    Random Forest & 0.84793 & 0.03779 & 45.6 \\
-    KNN & 0.84782 & 0.03782 & 796.1 \\
-    Decision Tree & 0.84781 & 0.03785 & 26.0 \\
-    SVM (RBF)  \textsuperscript{} & 0.84171 & 0.05159 & 5.8 \\
-    Gaussian Naive Bayes & 0.70760 & 0.00557 & 9.6 \\
-    Dummy (Zero-R) & 0.19786 & 0.00001 & 9.5 \\
+    Random Forest & 0.84793 & 0.03779 & 52.9 \\
+    KNN & 0.84782 & 0.03782 & 827.2 \\
+    Decision Tree & 0.84781 & 0.03785 & 30.0 \\
+    SVM (RBF)  \textsuperscript{} & 0.84171 & 0.05159 & 6.3 \\
+    Gaussian Naive Bayes & 0.70760 & 0.00557 & 11.0 \\
+    Dummy (Zero-R) & 0.19786 & 0.00001 & 11.2 \\
     \hline
   \end{tabular}
   \tablenote{  \textsuperscript{} The SVM benchmark uses the RBF-kernel SVC configuration. Its tuning run uses a class-stratified subset of 12,043 training records, whereas the other reported searches use the full 45,736-record training set. Search durations are specific to these runs and should not be interpreted as hardware-independent benchmarks.}
@@ -80,7 +80,7 @@ Table~\ref{tab:cv-results} reports the mean cross-validation macro-F1 and its st
 
 The three leading models obtain almost identical cross-validation scores. Random Forest reaches the highest mean macro-F1 (0.84793), followed by KNN (0.84782) and Decision Tree (0.84781). The absolute difference between the best and third-best result is approximately 0.00012, which is negligible in practical terms compared with the variation observed between folds. The standard deviations of these three models are also very similar, at approximately 0.038.
 
-The statistical comparison supports this interpretation. The Friedman test across all six classifiers indicates that their cross-validation performances are not all equivalent ($p=0.0018$). However, when the comparison is restricted to Random Forest, KNN and Decision Tree, the Friedman test gives $p=0.6271$. Therefore, the experiment does not provide evidence of a statistically significant difference among the three leading models. The Decision Tree was consequently retained because it offers a simpler and more interpretable structure, while also requiring substantially less tuning time than KNN in this experiment.
+The statistical comparison supports this interpretation. The Friedman test was applied to the five classifiers evaluated using paired cross-validation folds on the complete training set. SVM was excluded because it was tuned on a smaller training subset. The test indicates statistically significant performance differences among the five paired classifiers (χ² = 17.1368, p = 0.001818).. However, when the comparison is restricted to Random Forest, KNN and Decision Tree, the Friedman test gives $p=0.6271$. Therefore, the experiment does not provide evidence of a statistically significant difference among the three leading models. The Decision Tree was consequently retained because it offers a simpler and more interpretable structure, while also requiring substantially less tuning time than KNN in this experiment.
 
 The methodology also specified a McNemar test to compare the selected Decision Tree with the best alternative on the held-out test predictions. The test produced zero discordant observations, meaning that the two classifiers made the same correct and incorrect predictions for every test record. Consequently, the test statistic provides no evidence of a difference between their prediction outcomes ($p=1.000$). This result should be interpreted cautiously . identical predictions on this test set do not establish that the classifiers are equivalent on other datasets or network environments.
 

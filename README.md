@@ -116,11 +116,15 @@ The full per-member history is visible with `git shortlog -sn --no-merges` and i
 
 ## 4. Key results
 
+
 ### Evaluation protocol
 
-- **Group-aware cross-validation:** `StratifiedGroupKFold(n_splits=5)` on the training set, where the group is a hash of the 11 features, so identical flows never appear in both the training and validation folds (otherwise duplicates would inflate the scores).
-- **Selection metric: macro-F1.** Accuracy is misleading here (predicting `allow` everywhere already gives 57 %); macro-F1 gives the rare `reset-both` class the same weight as `allow`.
-- **Hyperparameter optimisation:** `GridSearchCV` on **every** model, inside the same folds, with the preprocessing refitted in each fold (no leakage). The test set is used once, after selection.
+- **Group-aware cross-validation:** `StratifiedGroupKFold(n_splits=5)` on the training set, where the group is a hash of the 11 features, so identical feature vectors never appear in both the training and validation folds.
+
+- **Selection metric: macro-F1.** Accuracy is misleading on this imbalanced dataset. Predicting `allow` for every record yields approximately 65.49% accuracy on the cleaned test set, but only 19.79% macro-F1, because Zero-R fails to identify the other three classes. Macro-F1 gives the rare `reset-both` class the same importance as `allow`.
+
+- **Hyperparameter optimisation:** `GridSearchCV` evaluates the five classifiers with tunable hyperparameters using group-aware cross-validation. The Zero-R baseline uses a fixed `most_frequent` strategy and is not tuned. Preprocessing is fitted independently within each training fold to prevent validation leakage. The held-out test set is reserved for final evaluation after model selection.
+
 
 ### Model comparison
 
@@ -133,7 +137,7 @@ CV = mean ± standard deviation of macro-F1 over the 5 folds; test = held-out se
 | KNN | k = 5, Manhattan distance, distance weighting | 0.8478 ± 0.038 | 0.790 | 0.931 | 1 / 11 | 243 |
 | SVM (SVC)¹ | RBF kernel, C = 10, γ = scale | 0.8417 ± 0.052 | 0.790 | 0.996 | 1 / 11 | 13 |
 | Gaussian Naive Bayes | var_smoothing = 1e-5 | 0.7076 ± 0.006 | 0.710 | 0.993 | **11 / 11** | 7.4 |
-| Zero-R (baseline) | majority class (`most_frequent`), fixed | 0.1979 ± 0.000 | 0.198 | 0.500 | 0 / 11 | 13.0 |
+| Zero-R (baseline) | majority class (`most_frequent`), fixed | 0.197561 ± 0.000011 | 0.198 | 0.500 | 0 / 11 | 13.0 |
 
 ¹ Kernel SVC was tuned on a stratified sample of 12,043 training rows (≤ 4,000 per class, all `reset-both` rows) because its cost grows about quadratically with the number of rows. Kernel study: RBF 0.842 > polynomial 0.836 ≈ linear 0.836.
 
